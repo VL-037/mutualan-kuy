@@ -2,7 +2,14 @@ package com.vincent.mutualan.mutualankuy.model.account;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.vincent.mutualan.mutualankuy.entity.AccountRelationship;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -37,6 +44,10 @@ public class AccountResponse implements Serializable {
     // private String password;
     //
     private Boolean isVerified;
+
+    private List<AccountRelationship> followers = new ArrayList<>();
+
+    private List<AccountRelationship> followings = new ArrayList<>();
 
     private Date createdAt;
 

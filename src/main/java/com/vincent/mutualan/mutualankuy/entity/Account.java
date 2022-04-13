@@ -69,8 +69,13 @@ public class Account {
 
   private Boolean isVerified = false;
 
+  @OneToMany(mappedBy = "followed")
+  @Nullable
+  private List<AccountRelationship> followers = new ArrayList<>();
+
   @OneToMany(mappedBy = "follower")
-  private List<Follower> followers = new ArrayList<>();
+  @Nullable
+  private List<AccountRelationship> followings = new ArrayList<>();
 
   private Date createdAt = new Date();
 
@@ -85,5 +90,25 @@ public class Account {
   public String getFullName() {
 
     return (this.firstName + " " + this.middleName + " " + this.lastName).trim();
+  }
+
+  @Override
+  public String toString() {
+
+    return "Account{" +
+        "id=" + id +
+        ", firstName='" + firstName + '\'' +
+        ", middleName='" + middleName + '\'' +
+        ", lastName='" + lastName + '\'' +
+        ", birthDate=" + birthDate +
+        ", age=" + age +
+        ", username='" + username + '\'' +
+        ", bio='" + bio + '\'' +
+        ", isVerified=" + isVerified +
+        ", followers=" + followers +
+        ", followings=" + followings +
+        ", createdAt=" + createdAt +
+        ", updatedAt=" + updatedAt +
+        '}';
   }
 }

@@ -1,14 +1,14 @@
 package com.vincent.mutualan.mutualankuy.service.impl;
 
-import com.vincent.mutualan.mutualankuy.entity.Account;
-import com.vincent.mutualan.mutualankuy.entity.Follower;
-import com.vincent.mutualan.mutualankuy.model.BaseResponse;
-import com.vincent.mutualan.mutualankuy.model.account.AccountResponse;
-import com.vincent.mutualan.mutualankuy.model.account.CreateAccountRequest;
-import com.vincent.mutualan.mutualankuy.repository.AccountRepository;
-import com.vincent.mutualan.mutualankuy.model.account.UpdateAccountRequest;
-import com.vincent.mutualan.mutualankuy.repository.FollowersRepository;
-import com.vincent.mutualan.mutualankuy.service.AccountService;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import com.vincent.mutualan.mutualankuy.entity.AccountRelationship;
+import com.vincent.mutualan.mutualankuy.model.accountRelationship.AccountRelationshipRequest;
+import com.vincent.mutualan.mutualankuy.model.accountRelationship.AccountRelationshipResponse;
+import com.vincent.mutualan.mutualankuy.repository.AccountRelationshipRepository;
 import org.apache.logging.log4j.util.Strings;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.NullValuePropertyMappingStrategy;
@@ -17,9 +17,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
+import com.vincent.mutualan.mutualankuy.entity.Account;
+import com.vincent.mutualan.mutualankuy.model.BaseResponse;
+import com.vincent.mutualan.mutualankuy.model.account.AccountResponse;
+import com.vincent.mutualan.mutualankuy.model.account.CreateAccountRequest;
+import com.vincent.mutualan.mutualankuy.model.account.UpdateAccountRequest;
+import com.vincent.mutualan.mutualankuy.repository.AccountRepository;
+import com.vincent.mutualan.mutualankuy.service.AccountService;
 
 @Service
 public class AccountServiceImpl implements AccountService {
@@ -28,7 +32,7 @@ public class AccountServiceImpl implements AccountService {
   private AccountRepository accountRepository;
 
   @Autowired
-  private FollowersRepository followersRepository;
+  private AccountRelationshipRepository accountRelationshipRepository;
 
   @Override
   public BaseResponse<AccountResponse> createOne(CreateAccountRequest request) {
@@ -77,10 +81,7 @@ public class AccountServiceImpl implements AccountService {
   @Override
   public BaseResponse<AccountResponse> findById(Long id) {
 
-    Account account = accountRepository.findById(id)
-        .stream()
-        .findFirst()
-        .orElseThrow(() -> new IllegalStateException(String.format("account with id %d does not exist", id)));
+    Account account = findOneAccount(id);
 
     return BaseResponse.<AccountResponse>builder()
         .status(HttpStatus.OK.value())
@@ -92,10 +93,7 @@ public class AccountServiceImpl implements AccountService {
   @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
   public BaseResponse<AccountResponse> updateOne(Long id, UpdateAccountRequest request) {
 
-    Account account = accountRepository.findById(id)
-        .stream()
-        .findFirst()
-        .orElseThrow(() -> new IllegalStateException(String.format("account with id %d does not exist", id)));
+    Account account = findOneAccount(id);
 
     if (isPresent(request.getUsername()) && !isUsernameEquals(request, account))
       throw new IllegalStateException(String.format("username already exists"));
@@ -130,23 +128,28 @@ public class AccountServiceImpl implements AccountService {
   }
 
   @Override
-  public BaseResponse<Boolean> follow(Long to_user_id) {
+  public BaseResponse<AccountRelationshipResponse> follow(AccountRelationshipRequest request) {
 
-    Follower followData = Follower.builder()
-        .from_user_id(null)
-        .to_user_id(null)
-        .build();
+    Account follower = findOneAccount(request.getFollowerId());
+    Account followed = findOneAccount(request.getFollowedId());
 
-    followersRepository.save(followData);
+    AccountRelationship followData = new AccountRelationship();
+    followData.setFollower(follower);
+    followData.setFollowed(followed);
 
-    return BaseResponse.<Boolean>builder()
+    AccountRelationship newFollowData = accountRelationshipRepository.save(followData);
+
+    return BaseResponse.<AccountRelationshipResponse>builder()
         .status(HttpStatus.OK.value())
-        .data(true)
+        .data(toAccountRelationshipResponse(newFollowData))
         .build();
   }
 
   @Override
-  public BaseResponse<Boolean> unfollow(Long to_user_id) {
+  public BaseResponse<Boolean> unfollow(AccountRelationshipRequest request) {
+
+    AccountRelationship accountRelationship = findOneRelationship(request);
+    accountRelationshipRepository.delete(accountRelationship);
 
     return BaseResponse.<Boolean>builder()
         .status(HttpStatus.OK.value())
@@ -159,6 +162,14 @@ public class AccountServiceImpl implements AccountService {
     AccountResponse accountResponse = new AccountResponse();
     BeanUtils.copyProperties(account, accountResponse);
     return accountResponse;
+  }
+
+  private Account findOneAccount(Long id) {
+
+    return accountRepository.findById(id)
+        .stream()
+        .findFirst()
+        .orElseThrow(() -> new IllegalStateException(String.format("account with id %d does not exist", id)));
   }
 
   private Account saveOneAccount(CreateAccountRequest request) {
@@ -179,5 +190,27 @@ public class AccountServiceImpl implements AccountService {
 
     return request.getUsername()
         .equals(account.getUsername());
+  }
+
+  private AccountRelationshipResponse toAccountRelationshipResponse(AccountRelationship relationData) {
+
+    AccountRelationshipResponse response = new AccountRelationshipResponse();
+    response.setFollowerId(relationData.getFollower()
+        .getId());
+    response.setFollowedId(relationData.getFollowed()
+        .getId());
+    BeanUtils.copyProperties(relationData, response);
+
+    return response;
+  }
+
+  private AccountRelationship findOneRelationship(AccountRelationshipRequest request) {
+
+    return accountRelationshipRepository.findOneAccountRelationship(request.getFollowerId(), request.getFollowedId())
+        .stream()
+        .findFirst()
+        .orElseThrow(
+            () -> new IllegalStateException(String.format("relation with from_id %d and to_id %d does not exist",
+                request.getFollowerId(), request.getFollowedId())));
   }
 }
