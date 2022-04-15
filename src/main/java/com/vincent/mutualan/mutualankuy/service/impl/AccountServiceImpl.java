@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import lombok.AllArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.NullValuePropertyMappingStrategy;
@@ -32,6 +33,7 @@ import com.vincent.mutualan.mutualankuy.repository.AccountRepository;
 import com.vincent.mutualan.mutualankuy.service.AccountService;
 
 @Service
+@AllArgsConstructor
 public class AccountServiceImpl implements AccountService {
 
   @Autowired

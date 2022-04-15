@@ -6,6 +6,7 @@ import static com.vincent.mutualan.mutualankuy.helper.response.ResponseHelper.ge
 import java.util.List;
 import java.util.stream.Collectors;
 
+import lombok.AllArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import com.vincent.mutualan.mutualankuy.repository.RoleRepository;
 import com.vincent.mutualan.mutualankuy.service.RoleService;
 
 @Service
+@AllArgsConstructor
 public class RoleServiceImpl implements RoleService {
 
   @Autowired

@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import lombok.AllArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,7 @@ import com.vincent.mutualan.mutualankuy.repository.TweetRepository;
 import com.vincent.mutualan.mutualankuy.service.TweetService;
 
 @Service
+@AllArgsConstructor
 public class TweetServiceImpl implements TweetService {
 
   @Autowired
