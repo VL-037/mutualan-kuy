@@ -3,6 +3,7 @@ package com.vincent.mutualan.mutualankuy.service.impl;
 import static com.vincent.mutualan.mutualankuy.helper.response.ResponseHelper.STATUS_OK;
 import static com.vincent.mutualan.mutualankuy.helper.response.ResponseHelper.getBaseResponse;
 
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -13,9 +14,11 @@ import org.springframework.stereotype.Service;
 import com.vincent.mutualan.mutualankuy.entity.Account;
 import com.vincent.mutualan.mutualankuy.entity.Tweet;
 import com.vincent.mutualan.mutualankuy.helper.account.AccountHelper;
+import com.vincent.mutualan.mutualankuy.helper.tweet.TweetHelper;
 import com.vincent.mutualan.mutualankuy.model.BaseResponse;
 import com.vincent.mutualan.mutualankuy.model.tweet.CreateTweetRequest;
 import com.vincent.mutualan.mutualankuy.model.tweet.TweetResponse;
+import com.vincent.mutualan.mutualankuy.model.tweet.UpdateTweetRequest;
 import com.vincent.mutualan.mutualankuy.repository.TweetRepository;
 import com.vincent.mutualan.mutualankuy.service.TweetService;
 
@@ -28,6 +31,9 @@ public class TweetServiceImpl implements TweetService {
   @Autowired
   private AccountHelper accountHelper;
 
+  @Autowired
+  private TweetHelper tweetHelper;
+
   @Override
   public BaseResponse<List<TweetResponse>> findAllByAccountId(Long accountId) {
 
@@ -39,6 +45,15 @@ public class TweetServiceImpl implements TweetService {
         .collect(Collectors.toList());
 
     return getBaseResponse(tweetResponses, STATUS_OK());
+  }
+
+  @Override
+  public BaseResponse<TweetResponse> findOneByTweetId(Long accountId, Long tweetId) {
+
+    accountHelper.findOneAccount(accountId);
+    Tweet tweet = tweetHelper.findOneTweet(accountId, tweetId);
+
+    return getBaseResponse(toTweetResponse(tweet), STATUS_OK());
   }
 
   @Override
@@ -63,6 +78,31 @@ public class TweetServiceImpl implements TweetService {
         .collect(Collectors.toList());
 
     return getBaseResponse(tweetResponses, STATUS_OK());
+  }
+
+  @Override
+  public BaseResponse<TweetResponse> updateOne(Long accountId, Long tweetId, UpdateTweetRequest request) {
+
+    accountHelper.findOneAccount(accountId);
+    Tweet tweet = tweetHelper.findOneTweet(accountId, tweetId);
+
+    tweet.setMessage(request.getMessage());
+    tweet.setUpdatedAt(new Date());
+
+    Tweet savedTweet = tweetRepository.save(tweet);
+
+    return getBaseResponse(toTweetResponse(savedTweet), STATUS_OK());
+  }
+
+  @Override
+  public BaseResponse<Boolean> deleteOne(Long accountId, Long tweetId) {
+
+    accountHelper.findOneAccount(accountId);
+    Tweet tweet = tweetHelper.findOneTweet(accountId, tweetId);
+
+    tweetRepository.delete(tweet);
+
+    return getBaseResponse(true, STATUS_OK());
   }
 
   private TweetResponse toTweetResponse(Tweet tweet) {
