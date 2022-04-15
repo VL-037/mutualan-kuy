@@ -36,45 +36,45 @@ public class AccountController {
   }
 
   @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-  public BaseResponse<AccountResponse> registerNewAccount(@RequestBody CreateAccountRequest request) {
+  public BaseResponse<?> registerNewAccount(@RequestBody CreateAccountRequest request) {
 
     return accountService.createOne(request);
   }
 
   @PostMapping(path = "/many", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-  public BaseResponse<List<AccountResponse>> registerManyNewAccount(@RequestBody List<CreateAccountRequest> requests) {
+  public BaseResponse<?> registerManyNewAccount(@RequestBody List<CreateAccountRequest> requests) {
 
     return accountService.createMany(requests);
   }
 
   @GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public BaseResponse<AccountResponse> getOneAccount(@PathVariable Long id) {
+  public BaseResponse<?> getOneAccount(@PathVariable Long id) {
 
     return accountService.findById(id);
   }
 
   @PatchMapping(path = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE,
       produces = MediaType.APPLICATION_JSON_VALUE)
-  public BaseResponse<AccountResponse> updateAccount(@PathVariable Long id, @RequestBody UpdateAccountRequest request) {
+  public BaseResponse<?> updateAccount(@PathVariable Long id, @RequestBody UpdateAccountRequest request) {
 
     return accountService.updateOne(id, request);
   }
 
   @DeleteMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public BaseResponse<Boolean> deleteAccount(@PathVariable Long id) {
+  public BaseResponse<?> deleteAccount(@PathVariable Long id) {
 
     return accountService.deleteById(id);
   }
 
   @PostMapping(path = "/{followed_id}/follow", produces = MediaType.APPLICATION_JSON_VALUE)
-  public BaseResponse<AccountRelationshipResponse> followAccount(@PathVariable Long followed_id,
+  public BaseResponse<?> followAccount(@PathVariable Long followed_id,
       @RequestParam Long follower_id) {
 
     return accountService.follow(toAccountRelationshipRequest(followed_id, follower_id));
   }
 
   @PostMapping(path = "/{followed_id}/unfollow", produces = MediaType.APPLICATION_JSON_VALUE)
-  public BaseResponse<Boolean> unfollowAccount(@PathVariable Long followed_id,
+  public BaseResponse<?> unfollowAccount(@PathVariable Long followed_id,
       @RequestParam Long follower_id) {
 
     return accountService.unfollow(toAccountRelationshipRequest(followed_id, follower_id));

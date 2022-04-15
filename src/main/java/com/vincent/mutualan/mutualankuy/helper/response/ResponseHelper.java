@@ -10,13 +10,28 @@ public class ResponseHelper {
   public static <T> BaseResponse<T> getBaseResponse(T data, Integer statusCode) {
 
     return BaseResponse.<T>builder()
-            .status(statusCode)
-            .data(data)
-            .build();
+        .status(statusCode)
+        .data(data)
+        .build();
   }
 
-  public final static Integer STATUS_OK() {
+  public final static Integer STATUS_OK() { // 200
 
     return HttpStatus.OK.value();
+  }
+
+  public final static Integer STATUS_NOT_FOUND() { // 404
+
+    return HttpStatus.NOT_FOUND.value();
+  }
+
+  public final static Integer STATUS_CONFLICT() { // 409
+
+    return HttpStatus.CONFLICT.value();
+  }
+
+  public final static Integer STATUS_UNPROCESSABLE() { // 422
+
+    return HttpStatus.UNPROCESSABLE_ENTITY.value();
   }
 }

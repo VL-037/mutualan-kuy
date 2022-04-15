@@ -13,19 +13,19 @@ import org.springframework.stereotype.Service;
 @Service
 public interface AccountService {
 
-  BaseResponse<AccountResponse> createOne(CreateAccountRequest request);
+  BaseResponse<?> createOne(CreateAccountRequest request);
 
-  BaseResponse<List<AccountResponse>> createMany(List<CreateAccountRequest> requests);
+  BaseResponse<?> createMany(List<CreateAccountRequest> requests);
 
   BaseResponse<List<AccountResponse>> findAll();
 
-  BaseResponse<AccountResponse> findById(Long id);
+  BaseResponse<?> findById(Long id);
 
-  BaseResponse<AccountResponse> updateOne(Long id, UpdateAccountRequest request);
+  BaseResponse<?> updateOne(Long id, UpdateAccountRequest request);
 
-  BaseResponse<Boolean> deleteById(Long id);
+  BaseResponse<?> deleteById(Long id);
 
-  BaseResponse<AccountRelationshipResponse> follow(CreateAccountRelationshipRequest request);
+  BaseResponse<?> follow(CreateAccountRelationshipRequest request);
 
-  BaseResponse<Boolean> unfollow(CreateAccountRelationshipRequest request);
+  BaseResponse<?> unfollow(CreateAccountRelationshipRequest request);
 }
