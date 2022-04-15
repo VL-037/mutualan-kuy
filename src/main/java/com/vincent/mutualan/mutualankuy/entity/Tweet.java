@@ -10,6 +10,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -25,31 +26,28 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AccountRelationship {
+public class Tweet {
 
   @Id
   @SequenceGenerator(
-      name = "account_relationship_sequence",
-      sequenceName = "account_relationship_sequence",
+      name = "tweet_sequence",
+      sequenceName = "tweet_sequence",
       allocationSize = 1)
   @GeneratedValue(
       strategy = GenerationType.SEQUENCE,
-      generator = "account_relationship_sequence")
+      generator = "tweet_sequence")
   private Long id;
 
-  @ManyToOne
-  @JoinColumn(name = "follower")
-  @NotNull
-  @JsonIgnore
-  private Account follower;
-
-  @ManyToOne
-  @JoinColumn(name = "followed")
-  @NotNull
-  @JsonIgnore
-  private Account followed;
+  @NotBlank
+  private String message;
 
   private Date createdAt = new Date();
 
   private Date updatedAt = new Date();
+
+  @ManyToOne
+  @JoinColumn(name = "creator")
+  @NotNull
+  @JsonIgnore
+  private Account creator;
 }

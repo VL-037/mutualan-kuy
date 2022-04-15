@@ -5,13 +5,17 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotNull;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AccountRelationshipRequest {
+public class CreateAccountRelationshipRequest {
 
-    private Long followerId;
+  @NotNull
+  private Long followerId;
 
-    private Long followedId;
+  @NotNull
+  private Long followedId;
 }

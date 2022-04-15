@@ -1,11 +1,10 @@
 package com.vincent.mutualan.mutualankuy.entity;
 
-import com.sun.istack.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.springframework.lang.Nullable;
+import java.time.LocalDate;
+import java.time.Period;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -17,11 +16,15 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Past;
-import java.time.LocalDate;
-import java.time.Period;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+
+import org.springframework.lang.Nullable;
+
+import com.sun.istack.NotNull;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table
@@ -76,6 +79,10 @@ public class Account {
   @OneToMany(mappedBy = "follower")
   @Nullable
   private List<AccountRelationship> followings = new ArrayList<>();
+
+  @OneToMany(mappedBy = "creator")
+  @Nullable
+  private List<Tweet> tweets = new ArrayList<>();
 
   private Date createdAt = new Date();
 

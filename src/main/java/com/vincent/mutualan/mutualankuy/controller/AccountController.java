@@ -2,11 +2,6 @@ package com.vincent.mutualan.mutualankuy.controller;
 
 import java.util.List;
 
-import com.vincent.mutualan.mutualankuy.model.account.CreateAccountRequest;
-import com.vincent.mutualan.mutualankuy.model.account.UpdateAccountRequest;
-import com.vincent.mutualan.mutualankuy.model.accountRelationship.AccountRelationshipRequest;
-import com.vincent.mutualan.mutualankuy.model.accountRelationship.AccountRelationshipResponse;
-import com.vincent.mutualan.mutualankuy.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -21,6 +16,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.vincent.mutualan.mutualankuy.model.BaseResponse;
 import com.vincent.mutualan.mutualankuy.model.account.AccountResponse;
+import com.vincent.mutualan.mutualankuy.model.account.CreateAccountRequest;
+import com.vincent.mutualan.mutualankuy.model.account.UpdateAccountRequest;
+import com.vincent.mutualan.mutualankuy.model.accountRelationship.CreateAccountRelationshipRequest;
+import com.vincent.mutualan.mutualankuy.model.accountRelationship.AccountRelationshipResponse;
+import com.vincent.mutualan.mutualankuy.service.AccountService;
 
 @RestController
 @RequestMapping(path = "api/v1/accounts")
@@ -80,9 +80,9 @@ public class AccountController {
     return accountService.unfollow(toAccountRelationshipRequest(followed_id, follower_id));
   }
 
-  private AccountRelationshipRequest toAccountRelationshipRequest(Long followed_id, Long follower_id) {
+  private CreateAccountRelationshipRequest toAccountRelationshipRequest(Long followed_id, Long follower_id) {
 
-    return AccountRelationshipRequest.builder()
+    return CreateAccountRelationshipRequest.builder()
         .followerId(follower_id)
         .followedId(followed_id)
         .build();

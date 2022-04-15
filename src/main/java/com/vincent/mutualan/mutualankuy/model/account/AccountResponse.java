@@ -6,9 +6,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.vincent.mutualan.mutualankuy.entity.AccountRelationship;
 
 import lombok.AllArgsConstructor;
@@ -22,51 +19,53 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AccountResponse implements Serializable {
 
-    private static final long serialVersionUID = 6659584132588460514L;
-    private Long id;
+  private static final long serialVersionUID = 6659584132588460514L;
 
-    private String firstName;
+  private Long id;
 
-    private String middleName;
+  private String firstName;
 
-    private String lastName;
+  private String middleName;
 
-    private LocalDate birthDate;
+  private String lastName;
 
-    private Integer age;
+  private LocalDate birthDate;
 
-    private String username;
+  private Integer age;
 
-    private String bio;
+  private String username;
 
-    // private String email;
-    //
-    // private String password;
-    //
-    private Boolean isVerified;
+  private String bio;
 
-    private List<AccountRelationship> followers = new ArrayList<>();
+  // private String email;
+  //
+  // private String password;
+  //
+  private Boolean isVerified;
 
-    private List<AccountRelationship> followings = new ArrayList<>();
+  private List<AccountRelationship> followers = new ArrayList<>();
 
-    private Date createdAt;
+  private List<AccountRelationship> followings = new ArrayList<>();
 
-    private Date updatedAt;
+  private Date createdAt;
 
-    @Override
-    public String toString() {
-        return "AccountResponse{" +
-                "id=" + id +
-                ", firstName='" + firstName + '\'' +
-                ", middleName='" + middleName + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ", birthDate=" + birthDate +
-                ", age=" + age +
-                ", username='" + username + '\'' +
-                ", bio='" + bio + '\'' +
-                ", isVerified=" + isVerified +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                '}';
-    }
+  private Date updatedAt;
+
+  @Override
+  public String toString() {
+
+    return "AccountResponse{" +
+        "id=" + id +
+        ", firstName='" + firstName + '\'' +
+        ", middleName='" + middleName + '\'' +
+        ", lastName='" + lastName + '\'' +
+        ", birthDate=" + birthDate +
+        ", age=" + age +
+        ", username='" + username + '\'' +
+        ", bio='" + bio + '\'' +
+        ", isVerified=" + isVerified +
+        ", createdAt=" + createdAt +
+        ", updatedAt=" + updatedAt +
+        '}';
+  }
 }

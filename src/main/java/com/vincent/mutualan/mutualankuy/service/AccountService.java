@@ -6,7 +6,7 @@ import com.vincent.mutualan.mutualankuy.model.BaseResponse;
 import com.vincent.mutualan.mutualankuy.model.account.AccountResponse;
 import com.vincent.mutualan.mutualankuy.model.account.CreateAccountRequest;
 import com.vincent.mutualan.mutualankuy.model.account.UpdateAccountRequest;
-import com.vincent.mutualan.mutualankuy.model.accountRelationship.AccountRelationshipRequest;
+import com.vincent.mutualan.mutualankuy.model.accountRelationship.CreateAccountRelationshipRequest;
 import com.vincent.mutualan.mutualankuy.model.accountRelationship.AccountRelationshipResponse;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +25,7 @@ public interface AccountService {
 
   BaseResponse<Boolean> deleteById(Long id);
 
-  BaseResponse<AccountRelationshipResponse> follow(AccountRelationshipRequest request);
+  BaseResponse<AccountRelationshipResponse> follow(CreateAccountRelationshipRequest request);
 
-  BaseResponse<Boolean> unfollow(AccountRelationshipRequest request);
+  BaseResponse<Boolean> unfollow(CreateAccountRelationshipRequest request);
 }

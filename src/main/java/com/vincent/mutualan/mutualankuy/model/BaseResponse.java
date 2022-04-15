@@ -1,13 +1,13 @@
 package com.vincent.mutualan.mutualankuy.model;
 
+import java.io.Serializable;
+import java.util.List;
+import java.util.Map;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.io.Serializable;
-import java.util.List;
-import java.util.Map;
 
 @Data
 @Builder
@@ -25,10 +25,11 @@ public class BaseResponse<T> implements Serializable {
 
   @Override
   public String toString() {
+
     return "BaseResponse{" +
-            "status=" + status +
-            ", data=" + data +
-            ", errors=" + errors +
-            '}';
+        "status=" + status +
+        ", data=" + data +
+        ", errors=" + errors +
+        '}';
   }
 }

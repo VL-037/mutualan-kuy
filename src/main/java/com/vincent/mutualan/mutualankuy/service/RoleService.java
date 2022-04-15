@@ -10,7 +10,7 @@ import java.util.List;
 @Service
 public interface RoleService {
 
-    BaseResponse<List<RoleResponse>> findAll();
+  BaseResponse<List<RoleResponse>> findAll();
 
-    BaseResponse<List<RoleResponse>> createManyRoles(List<CreateRoleRequest> requests);
+  BaseResponse<List<RoleResponse>> createManyRoles(List<CreateRoleRequest> requests);
 }

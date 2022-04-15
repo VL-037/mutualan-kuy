@@ -13,16 +13,18 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RoleResponse implements Serializable {
 
-    private static final long serialVersionUID = 6659584132588460515L;
-    private Long id;
+  private static final long serialVersionUID = 6659584132588460515L;
 
-    private String name;
+  private Long id;
 
-    @Override
-    public String toString() {
-        return "RoleResponse{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                '}';
-    }
+  private String name;
+
+  @Override
+  public String toString() {
+
+    return "RoleResponse{" +
+        "id=" + id +
+        ", name='" + name + '\'' +
+        '}';
+  }
 }
