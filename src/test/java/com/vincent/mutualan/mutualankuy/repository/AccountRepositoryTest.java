@@ -13,42 +13,45 @@ import com.vincent.mutualan.mutualankuy.entity.Account;
 @DataJpaTest
 class AccountRepositoryTest {
 
-    @Autowired
-    private AccountRepository accountRepository;
+  @Autowired
+  private AccountRepository accountRepository;
 
-    @AfterEach
-    void tearDown() {
-        accountRepository.deleteAll();
-    }
+  @AfterEach
+  void tearDown() {
 
-    @Test
-    void findOneByUsername_shouldReturnNotNull() {
-        String username = "vincent.low";
+    accountRepository.deleteAll();
+  }
 
-        Account expected = new Account();
-        expected.setFirstName("Vincent");
-        expected.setLastName("Low");
-        expected.setBirthDate(LocalDate.MIN);
-        expected.setUsername(username);
-        accountRepository.save(expected);
+  @Test
+  void findOneByUsername_shouldReturnNotNull() {
 
-        Account result = accountRepository.findOneByUsername(username)
-                .stream()
-                .findFirst()
-                .orElse(null);
+    String username = "vincent.low";
 
-        Assertions.assertEquals(expected, result);
-    }
+    Account expected = new Account();
+    expected.setFirstName("Vincent");
+    expected.setLastName("Low");
+    expected.setBirthDate(LocalDate.MIN);
+    expected.setUsername(username);
+    accountRepository.save(expected);
 
-    @Test
-    void findOneByUsername_shouldReturnNull() {
-        String username = "vincent.low";
+    Account result = accountRepository.findOneByUsername(username)
+        .stream()
+        .findFirst()
+        .orElse(null);
 
-        Account result = accountRepository.findOneByUsername(username)
-                .stream()
-                .findFirst()
-                .orElse(null);
+    Assertions.assertEquals(expected, result);
+  }
 
-        Assertions.assertEquals(null, result);
-    }
+  @Test
+  void findOneByUsername_shouldReturnNull() {
+
+    String username = "vincent.low";
+
+    Account result = accountRepository.findOneByUsername(username)
+        .stream()
+        .findFirst()
+        .orElse(null);
+
+    Assertions.assertEquals(null, result);
+  }
 }
