@@ -23,7 +23,8 @@ public class CreateAccountRequest {
 
   private String middleName = "";
 
-  private String lastName = "";
+  @NotBlank
+  private String lastName;
 
   @NotBlank
   private LocalDate birthDate;
