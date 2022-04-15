@@ -1,10 +1,12 @@
 package com.vincent.mutualan.mutualankuy.service.impl;
 
+import static com.vincent.mutualan.mutualankuy.helper.response.ResponseHelper.STATUS_NOT_FOUND;
 import static com.vincent.mutualan.mutualankuy.helper.response.ResponseHelper.STATUS_OK;
 import static com.vincent.mutualan.mutualankuy.helper.response.ResponseHelper.getBaseResponse;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanUtils;
@@ -35,9 +37,11 @@ public class TweetServiceImpl implements TweetService {
   private TweetHelper tweetHelper;
 
   @Override
-  public BaseResponse<List<TweetResponse>> findAllByAccountId(Long accountId) {
+  public BaseResponse<?> findAllByAccountId(Long accountId) {
 
-    accountHelper.findOneAccount(accountId);
+    Account account = accountHelper.findOneAccount(accountId);
+    if (Objects.isNull(account))
+      return getBaseResponse(String.format("account with id %d does not exist", accountId), STATUS_NOT_FOUND());
 
     List<Tweet> tweets = tweetRepository.findAllByAccountId(accountId);
     List<TweetResponse> tweetResponses = tweets.stream()
@@ -48,27 +52,36 @@ public class TweetServiceImpl implements TweetService {
   }
 
   @Override
-  public BaseResponse<TweetResponse> findOneByTweetId(Long accountId, Long tweetId) {
+  public BaseResponse<?> findOneByTweetId(Long accountId, Long tweetId) {
 
-    accountHelper.findOneAccount(accountId);
+    Account account = accountHelper.findOneAccount(accountId);
+    if (Objects.isNull(account))
+      return getBaseResponse(String.format("account with id %d does not exist", accountId), STATUS_NOT_FOUND());
+
     Tweet tweet = tweetHelper.findOneTweet(accountId, tweetId);
+    if (Objects.isNull(tweet))
+      return getBaseResponse(String.format("tweet with id %d does not exist", tweetId), STATUS_NOT_FOUND());
 
     return getBaseResponse(toTweetResponse(tweet), STATUS_OK());
   }
 
   @Override
-  public BaseResponse<TweetResponse> createOne(Long accountId, CreateTweetRequest request) {
+  public BaseResponse<?> createOne(Long accountId, CreateTweetRequest request) {
 
     Account creator = accountHelper.findOneAccount(accountId);
+    if (Objects.isNull(creator))
+      return getBaseResponse(String.format("account with id %d does not exist", accountId), STATUS_NOT_FOUND());
     Tweet newTweet = saveOneTweet(creator, request);
 
     return getBaseResponse(toTweetResponse(newTweet), STATUS_OK());
   }
 
   @Override
-  public BaseResponse<List<TweetResponse>> createMany(Long accountId, List<CreateTweetRequest> requests) {
+  public BaseResponse<?> createMany(Long accountId, List<CreateTweetRequest> requests) {
 
     Account creator = accountHelper.findOneAccount(accountId);
+    if (Objects.isNull(creator))
+      return getBaseResponse(String.format("account with id %d does not exist", accountId), STATUS_NOT_FOUND());
 
     List<TweetResponse> tweetResponses = requests.stream()
         .map(request -> saveOneTweet(creator, request))
@@ -81,10 +94,15 @@ public class TweetServiceImpl implements TweetService {
   }
 
   @Override
-  public BaseResponse<TweetResponse> updateOne(Long accountId, Long tweetId, UpdateTweetRequest request) {
+  public BaseResponse<?> updateOne(Long accountId, Long tweetId, UpdateTweetRequest request) {
 
-    accountHelper.findOneAccount(accountId);
+    Account creator = accountHelper.findOneAccount(accountId);
+    if (Objects.isNull(creator))
+      return getBaseResponse(String.format("account with id %d does not exist", accountId), STATUS_NOT_FOUND());
+
     Tweet tweet = tweetHelper.findOneTweet(accountId, tweetId);
+    if (Objects.isNull(tweet))
+      return getBaseResponse(String.format("tweet with id %d does not exist", tweetId), STATUS_NOT_FOUND());
 
     tweet.setMessage(request.getMessage());
     tweet.setUpdatedAt(new Date());
@@ -95,10 +113,16 @@ public class TweetServiceImpl implements TweetService {
   }
 
   @Override
-  public BaseResponse<Boolean> deleteOne(Long accountId, Long tweetId) {
+  public BaseResponse<?> deleteOne(Long accountId, Long tweetId) {
 
-    accountHelper.findOneAccount(accountId);
+    Account creator = accountHelper.findOneAccount(accountId);
+    if (Objects.isNull(creator))
+      return getBaseResponse(String.format("account with id %d does not exist", accountId), STATUS_NOT_FOUND());
+
     Tweet tweet = tweetHelper.findOneTweet(accountId, tweetId);
+    if (Objects.isNull(tweet))
+      return getBaseResponse(String.format("tweet with id %d does not exist", tweetId), STATUS_NOT_FOUND());
+
 
     tweetRepository.delete(tweet);
 

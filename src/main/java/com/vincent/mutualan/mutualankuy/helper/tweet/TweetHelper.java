@@ -15,6 +15,6 @@ public class TweetHelper {
         return tweetRepository.findByTweetId(accountId, tweetId)
                 .stream()
                 .findFirst()
-                .orElseThrow(() -> new IllegalStateException(String.format("tweet with id %d does not exist", tweetId)));
+                .orElse(null);
     }
 }

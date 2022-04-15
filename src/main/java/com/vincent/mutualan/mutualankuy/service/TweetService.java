@@ -12,15 +12,15 @@ import com.vincent.mutualan.mutualankuy.model.tweet.UpdateTweetRequest;
 @Service
 public interface TweetService {
 
-    BaseResponse<List<TweetResponse>> findAllByAccountId(Long accountId);
+    BaseResponse<?> findAllByAccountId(Long accountId);
 
-    BaseResponse<TweetResponse> findOneByTweetId(Long accountId, Long tweetId);
+    BaseResponse<?> findOneByTweetId(Long accountId, Long tweetId);
 
-    BaseResponse<TweetResponse> createOne(Long accountId, CreateTweetRequest request);
+    BaseResponse<?> createOne(Long accountId, CreateTweetRequest request);
 
-    BaseResponse<List<TweetResponse>> createMany(Long accountId, List<CreateTweetRequest> requests);
+    BaseResponse<?> createMany(Long accountId, List<CreateTweetRequest> requests);
 
-    BaseResponse<TweetResponse> updateOne(Long accountId, Long tweetId, UpdateTweetRequest request);
+    BaseResponse<?> updateOne(Long accountId, Long tweetId, UpdateTweetRequest request);
 
-    BaseResponse<Boolean> deleteOne(Long accountId, Long tweetId);
+    BaseResponse<?> deleteOne(Long accountId, Long tweetId);
 }
