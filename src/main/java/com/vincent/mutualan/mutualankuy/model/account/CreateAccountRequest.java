@@ -29,6 +29,7 @@ public class CreateAccountRequest {
   @NotBlank
   private LocalDate birthDate;
 
+  @NotBlank
   private String username = "";
 
   private String bio = "";
