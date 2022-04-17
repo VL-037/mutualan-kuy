@@ -26,17 +26,22 @@ public class AccountHelper {
         .orElse(null);
   }
 
-  public Boolean isPresent(String username) {
+  public Boolean isPresent(java.lang.String username) {
 
     return accountRepository.findOneByUsername(username)
-            .isPresent();
+        .isPresent();
+  }
+
+  public Boolean isUsernameEquals(String request, String account) {
+
+    return request.equals(account);
   }
 
   public AccountRelationship findOneRelationship(CreateAccountRelationshipRequest request) {
 
     return accountRelationshipRepository.findOneAccountRelationship(request.getFollowerId(), request.getFollowedId())
-            .stream()
-            .findFirst()
-            .orElse(null);
+        .stream()
+        .findFirst()
+        .orElse(null);
   }
 }

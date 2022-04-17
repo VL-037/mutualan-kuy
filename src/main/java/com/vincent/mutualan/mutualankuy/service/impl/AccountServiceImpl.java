@@ -2,6 +2,7 @@ package com.vincent.mutualan.mutualankuy.service.impl;
 
 import static com.vincent.mutualan.mutualankuy.helper.response.ResponseHelper.STATUS_CONFLICT;
 import static com.vincent.mutualan.mutualankuy.helper.response.ResponseHelper.STATUS_NOT_FOUND;
+import static com.vincent.mutualan.mutualankuy.helper.response.ResponseHelper.STATUS_NO_CONTENT;
 import static com.vincent.mutualan.mutualankuy.helper.response.ResponseHelper.STATUS_OK;
 import static com.vincent.mutualan.mutualankuy.helper.response.ResponseHelper.STATUS_UNPROCESSABLE;
 import static com.vincent.mutualan.mutualankuy.helper.response.ResponseHelper.getBaseResponse;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import com.vincent.mutualan.mutualankuy.model.account.UpdateAccountRequest;
 import lombok.AllArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
 import org.mapstruct.BeanMapping;
@@ -25,7 +27,6 @@ import com.vincent.mutualan.mutualankuy.helper.account.AccountHelper;
 import com.vincent.mutualan.mutualankuy.model.BaseResponse;
 import com.vincent.mutualan.mutualankuy.model.account.AccountResponse;
 import com.vincent.mutualan.mutualankuy.model.account.CreateAccountRequest;
-import com.vincent.mutualan.mutualankuy.model.account.UpdateAccountRequest;
 import com.vincent.mutualan.mutualankuy.model.accountRelationship.AccountRelationshipResponse;
 import com.vincent.mutualan.mutualankuy.model.accountRelationship.CreateAccountRelationshipRequest;
 import com.vincent.mutualan.mutualankuy.repository.AccountRelationshipRepository;
@@ -48,8 +49,12 @@ public class AccountServiceImpl implements AccountService {
   @Override
   public BaseResponse<?> createOne(CreateAccountRequest request) {
 
+    if (Objects.isNull(request))
+      return getBaseResponse(java.lang.String.format("empty request body"), STATUS_NO_CONTENT());
+
     if (accountHelper.isPresent(request.getUsername()))
-      return getBaseResponse(String.format("username is taken: %s", request.getUsername()), STATUS_CONFLICT());
+      return getBaseResponse(java.lang.String.format("username is taken: %s", request.getUsername()),
+          STATUS_CONFLICT());
 
     Account newAccount = saveOneAccount(request);
 
@@ -59,20 +64,24 @@ public class AccountServiceImpl implements AccountService {
   @Override
   public BaseResponse<?> createMany(List<CreateAccountRequest> requests) {
 
+    if (Objects.isNull(requests))
+      return getBaseResponse(java.lang.String.format("empty request body"), STATUS_NO_CONTENT());
+
     for (CreateAccountRequest request : requests) {
       if (accountHelper.isPresent(request.getUsername()))
-        return getBaseResponse(String.format("username is taken: %s", request.getUsername()), STATUS_CONFLICT());
+        return getBaseResponse(java.lang.String.format("username is taken: %s", request.getUsername()),
+            STATUS_CONFLICT());
     }
 
     List<Account> newAccounts = requests.stream()
-            .map(this::toAccount)
-            .collect(Collectors.toList());
+        .map(this::toAccount)
+        .collect(Collectors.toList());
 
     List<Account> savedAccounts = accountRepository.saveAll(newAccounts);
 
     List<AccountResponse> accountResponses = savedAccounts.stream()
-            .map(this::toAccountResponse)
-            .collect(Collectors.toList());
+        .map(this::toAccountResponse)
+        .collect(Collectors.toList());
 
     return getBaseResponse(accountResponses, STATUS_OK());
   }
@@ -93,7 +102,7 @@ public class AccountServiceImpl implements AccountService {
 
     Account account = accountHelper.findOneAccount(id);
     if (Objects.isNull(account))
-      return getBaseResponse(String.format("account with id %d does not exist", id), STATUS_NOT_FOUND());
+      return getBaseResponse(java.lang.String.format("account with id %d does not exist", id), STATUS_NOT_FOUND());
 
     return getBaseResponse(toAccountResponse(account), STATUS_OK());
   }
@@ -104,21 +113,18 @@ public class AccountServiceImpl implements AccountService {
 
     Account account = accountHelper.findOneAccount(id);
     if (Objects.isNull(account))
-      return getBaseResponse(String.format("account with id %d does not exist", id), STATUS_NOT_FOUND());
+      return getBaseResponse(java.lang.String.format("account with id %d does not exist", id), STATUS_NOT_FOUND());
 
-    if (accountHelper.isPresent(request.getUsername()) && !isUsernameEquals(request, account))
-      return getBaseResponse(String.format("username is taken: %s", request.getUsername()), STATUS_CONFLICT());
+    if (accountHelper.isPresent(request.getUsername())
+        && !accountHelper.isUsernameEquals(request.getUsername(), account.getUsername()))
+      return getBaseResponse(java.lang.String.format("username is taken: %s", request.getUsername()),
+          STATUS_CONFLICT());
 
-    account.setFirstName(request.getFirstName());
+    Account updatedAccount = new Account();
+    BeanUtils.copyProperties(account, updatedAccount);
+    BeanUtils.copyProperties(request, updatedAccount);
 
-    if (Strings.isNotBlank(request.getMiddleName()))
-      account.setMiddleName(request.getMiddleName());
-    if (Strings.isNotBlank(request.getBio()))
-      account.setBio(request.getBio());
-
-    account.setUpdatedAt(new Date());
-
-    Account savedAccount = accountRepository.save(account);
+    Account savedAccount = accountRepository.save(updatedAccount);
 
     return getBaseResponse(toAccountResponse(savedAccount), STATUS_OK());
   }
@@ -129,7 +135,7 @@ public class AccountServiceImpl implements AccountService {
     Account account = accountHelper.findOneAccount(id);
 
     if (Objects.isNull(account))
-      return getBaseResponse(String.format("account with id %d does not exist", id), STATUS_NOT_FOUND());
+      return getBaseResponse(java.lang.String.format("account with id %d does not exist", id), STATUS_NOT_FOUND());
 
     accountRepository.deleteById(id);
 
@@ -141,12 +147,12 @@ public class AccountServiceImpl implements AccountService {
 
     Account follower = accountHelper.findOneAccount(request.getFollowerId());
     if (Objects.isNull(follower))
-      return getBaseResponse(String.format("account with id %d does not exist", request.getFollowerId()),
+      return getBaseResponse(java.lang.String.format("account with id %d does not exist", request.getFollowerId()),
           STATUS_UNPROCESSABLE());
 
     Account followed = accountHelper.findOneAccount(request.getFollowedId());
     if (Objects.isNull(followed))
-      return getBaseResponse(String.format("account with id %d does not exist", request.getFollowedId()),
+      return getBaseResponse(java.lang.String.format("account with id %d does not exist", request.getFollowedId()),
           STATUS_UNPROCESSABLE());
 
     AccountRelationship followData = new AccountRelationship();
@@ -163,7 +169,7 @@ public class AccountServiceImpl implements AccountService {
 
     AccountRelationship accountRelationship = accountHelper.findOneRelationship(request);
     if (Objects.isNull(accountRelationship))
-      return getBaseResponse(String.format("relationship does not exist"), STATUS_UNPROCESSABLE());
+      return getBaseResponse(java.lang.String.format("relationship does not exist"), STATUS_UNPROCESSABLE());
 
     accountRelationshipRepository.delete(accountRelationship);
 
@@ -189,12 +195,6 @@ public class AccountServiceImpl implements AccountService {
     BeanUtils.copyProperties(request, newAccount);
 
     return accountRepository.save(newAccount);
-  }
-
-  private Boolean isUsernameEquals(UpdateAccountRequest request, Account account) {
-
-    return request.getUsername()
-        .equals(account.getUsername());
   }
 
   private Account toAccount(CreateAccountRequest request) {

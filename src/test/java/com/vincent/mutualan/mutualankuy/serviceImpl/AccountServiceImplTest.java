@@ -1,6 +1,8 @@
 package com.vincent.mutualan.mutualankuy.serviceImpl;
 
 import static com.vincent.mutualan.mutualankuy.helper.response.ResponseHelper.STATUS_CONFLICT;
+import static com.vincent.mutualan.mutualankuy.helper.response.ResponseHelper.STATUS_NOT_FOUND;
+import static com.vincent.mutualan.mutualankuy.helper.response.ResponseHelper.STATUS_NO_CONTENT;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
@@ -24,6 +26,7 @@ import org.springframework.beans.BeanUtils;
 import com.vincent.mutualan.mutualankuy.entity.Account;
 import com.vincent.mutualan.mutualankuy.helper.account.AccountHelper;
 import com.vincent.mutualan.mutualankuy.model.account.CreateAccountRequest;
+import com.vincent.mutualan.mutualankuy.model.account.UpdateAccountRequest;
 import com.vincent.mutualan.mutualankuy.repository.AccountRelationshipRepository;
 import com.vincent.mutualan.mutualankuy.repository.AccountRepository;
 import com.vincent.mutualan.mutualankuy.service.AccountService;
@@ -91,6 +94,16 @@ class AccountServiceImplTest {
     Assertions.assertThat(accountService.createOne(request)
         .getStatus())
         .isEqualTo(STATUS_CONFLICT());
+
+    verify(accountRepository, never()).save(any());
+  }
+
+  @Test
+  void createOne_whenRequestIsNull_shouldReturnStatusNoContentNeverSaved() {
+
+    Assertions.assertThat(accountService.createOne(null)
+        .getStatus())
+        .isEqualTo(STATUS_NO_CONTENT());
 
     verify(accountRepository, never()).save(any());
   }
@@ -199,13 +212,125 @@ class AccountServiceImplTest {
   }
 
   @Test
-  void findAll_success() {}
+  void createMany_whenRequestIsNull_shouldReturnStatusNoContentAndNeverSaved() {
+
+    Assertions.assertThat(accountService.createMany(null)
+        .getStatus())
+        .isEqualTo(STATUS_NO_CONTENT());
+
+    verify(accountRepository, never()).saveAll(any());
+  }
 
   @Test
-  void findById() {}
+  void findAll_success() {
+
+    accountService.findAll();
+
+    verify(accountRepository).findAll();
+  }
 
   @Test
-  void updateOne() {}
+  void findById_success() {
+
+    Account account = new Account();
+    account.setId(1L);
+    account.setFirstName("vincent");
+    account.setLastName("low");
+    account.setBirthDate(LocalDate.MIN);
+    account.setUsername("vincent.low");
+
+    accountService.findById(1L);
+
+    ArgumentCaptor<Long> studentIdArgumentCaptor = ArgumentCaptor.forClass(Long.class);
+    verify(accountHelper).findOneAccount(studentIdArgumentCaptor.capture());
+
+    Long resultId = studentIdArgumentCaptor.getValue();
+    Assertions.assertThat(resultId)
+        .isEqualTo(account.getId());
+  }
+
+  @Test
+  void findById_whenIdIsNull_shouldReturnStatusNotFound() {
+
+    Assertions.assertThat(accountService.findById(null)
+        .getStatus())
+        .isEqualTo(STATUS_NOT_FOUND());
+
+    verify(accountRepository, never()).findById(any());
+  }
+
+  @Test
+  void updateOne_whenAccountIsExistsAndUsernameIsUnique_success() {
+
+    Account existedAccount = new Account();
+    existedAccount.setId(1L);
+    existedAccount.setFirstName("vincent");
+    existedAccount.setLastName("low");
+    existedAccount.setBirthDate(LocalDate.MIN);
+    existedAccount.setUsername("vincent.low");
+
+    Account updatedAccount = new Account();
+    updatedAccount.setFirstName("jamet");
+    updatedAccount.setLastName("low");
+    updatedAccount.setBirthDate(LocalDate.MIN);
+    updatedAccount.setUsername("jamet.low");
+
+    UpdateAccountRequest updateAccountRequest = new UpdateAccountRequest();
+    BeanUtils.copyProperties(updatedAccount, updateAccountRequest);
+
+    BDDMockito.given(accountHelper.findOneAccount(existedAccount.getId())).willReturn(existedAccount);
+    BDDMockito.given(accountHelper.isPresent(updatedAccount.getUsername())).willReturn(false);
+
+    accountService.updateOne(existedAccount.getId(), updateAccountRequest);
+
+    verify(accountRepository).save(any());
+  }
+
+  @Test
+  void updateOne_whenAccountIsNotExists_shouldReturnStatusNotFoundAndNeverSaved() {
+
+    Account updateAccount = new Account();
+    updateAccount.setId(1L);
+    updateAccount.setFirstName("vincent");
+    updateAccount.setLastName("low");
+    updateAccount.setBirthDate(LocalDate.MIN);
+    updateAccount.setUsername("vincent.low");
+
+    UpdateAccountRequest updateAccountRequest = new UpdateAccountRequest();
+    BeanUtils.copyProperties(updateAccount, updateAccountRequest);
+
+    BDDMockito.given(accountHelper.findOneAccount(updateAccount.getId())).willReturn(null);
+
+    Assertions.assertThat(accountService.updateOne(updateAccount.getId(), updateAccountRequest).getStatus())
+            .isEqualTo(STATUS_NOT_FOUND());
+
+    verify(accountRepository, never()).save(updateAccount);
+  }
+
+  @Test
+  void updateOne_whenUsernameIsTaken_shouldReturnStatusConflictAndNeverSaved() {
+
+    Account updateAccount = new Account();
+    updateAccount.setId(1L);
+    updateAccount.setFirstName("vincent");
+    updateAccount.setMiddleName("middle");
+    updateAccount.setLastName("low");
+    updateAccount.setBirthDate(LocalDate.MIN);
+    updateAccount.setUsername("vincent.low");
+    updateAccount.setBio("just the two of us");
+
+    UpdateAccountRequest updateAccountRequest = new UpdateAccountRequest();
+    BeanUtils.copyProperties(updateAccount, updateAccountRequest);
+
+    BDDMockito.given(accountHelper.findOneAccount(updateAccount.getId())).willReturn(updateAccount);
+    BDDMockito.given(accountHelper.isPresent(updateAccountRequest.getUsername())).willReturn(true);
+    BDDMockito.given(accountHelper.isUsernameEquals(updateAccountRequest.getUsername(), updateAccount.getUsername())).willReturn(false);
+
+    Assertions.assertThat(accountService.updateOne(updateAccount.getId(), updateAccountRequest).getStatus())
+            .isEqualTo(STATUS_CONFLICT());
+
+    verify(accountRepository, never()).save(updateAccount);
+  }
 
   @Test
   void deleteById() {}

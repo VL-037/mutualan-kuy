@@ -20,6 +20,11 @@ public class ResponseHelper {
     return HttpStatus.OK.value();
   }
 
+  public final static Integer STATUS_NO_CONTENT() { // 200
+
+    return HttpStatus.NO_CONTENT.value();
+  }
+
   public final static Integer STATUS_NOT_FOUND() { // 404
 
     return HttpStatus.NOT_FOUND.value();
