@@ -3,11 +3,11 @@ package com.vincent.mutualan.mutualankuy.serviceImpl;
 import static com.vincent.mutualan.mutualankuy.helper.response.ResponseHelper.STATUS_CONFLICT;
 import static com.vincent.mutualan.mutualankuy.helper.response.ResponseHelper.STATUS_NOT_FOUND;
 import static com.vincent.mutualan.mutualankuy.helper.response.ResponseHelper.STATUS_NO_CONTENT;
+import static com.vincent.mutualan.mutualankuy.helper.response.ResponseHelper.STATUS_UNPROCESSABLE;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -25,9 +25,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.BeanUtils;
 
 import com.vincent.mutualan.mutualankuy.entity.Account;
+import com.vincent.mutualan.mutualankuy.entity.AccountRelationship;
 import com.vincent.mutualan.mutualankuy.helper.account.AccountHelper;
 import com.vincent.mutualan.mutualankuy.model.account.CreateAccountRequest;
 import com.vincent.mutualan.mutualankuy.model.account.UpdateAccountRequest;
+import com.vincent.mutualan.mutualankuy.model.accountRelationship.CreateAccountRelationshipRequest;
 import com.vincent.mutualan.mutualankuy.repository.AccountRelationshipRepository;
 import com.vincent.mutualan.mutualankuy.repository.AccountRepository;
 import com.vincent.mutualan.mutualankuy.service.AccountService;
@@ -96,7 +98,8 @@ class AccountServiceImplTest {
         .getStatus())
         .isEqualTo(STATUS_CONFLICT());
 
-    verify(accountRepository, never()).save(any());
+    Mockito.verify(accountRepository, never())
+        .save(any());
   }
 
   @Test
@@ -106,7 +109,8 @@ class AccountServiceImplTest {
         .getStatus())
         .isEqualTo(STATUS_NO_CONTENT());
 
-    verify(accountRepository, never()).save(any());
+    Mockito.verify(accountRepository, never())
+        .save(any());
   }
 
   @Test
@@ -209,7 +213,8 @@ class AccountServiceImplTest {
         .getStatus())
         .isEqualTo(STATUS_CONFLICT());
 
-    verify(accountRepository, never()).saveAll(any());
+    Mockito.verify(accountRepository, never())
+        .saveAll(any());
   }
 
   @Test
@@ -219,7 +224,8 @@ class AccountServiceImplTest {
         .getStatus())
         .isEqualTo(STATUS_NO_CONTENT());
 
-    verify(accountRepository, never()).saveAll(any());
+    Mockito.verify(accountRepository, never())
+        .saveAll(any());
   }
 
   @Test
@@ -227,7 +233,8 @@ class AccountServiceImplTest {
 
     accountService.findAll();
 
-    verify(accountRepository).findAll();
+    Mockito.verify(accountRepository)
+        .findAll();
   }
 
   @Test
@@ -243,7 +250,8 @@ class AccountServiceImplTest {
     accountService.findById(1L);
 
     ArgumentCaptor<Long> studentIdArgumentCaptor = ArgumentCaptor.forClass(Long.class);
-    verify(accountHelper).findOneAccount(studentIdArgumentCaptor.capture());
+    Mockito.verify(accountHelper)
+        .findOneAccount(studentIdArgumentCaptor.capture());
 
     Long resultId = studentIdArgumentCaptor.getValue();
     Assertions.assertThat(resultId)
@@ -251,17 +259,39 @@ class AccountServiceImplTest {
   }
 
   @Test
-  void findById_whenIdIsNull_shouldReturnStatusNotFound() {
+  void findById_whenAccountDoesNotExists_shouldReturnStatusNotFoundAndNeverFound() {
 
-    Assertions.assertThat(accountService.findById(null)
+    Account account = new Account();
+    account.setId(1L);
+    account.setFirstName("vincent");
+    account.setLastName("low");
+    account.setBirthDate(LocalDate.MIN);
+    account.setUsername("vincent.low");
+
+    BDDMockito.given(accountHelper.findOneAccount(anyLong()))
+        .willReturn(null);
+
+    Assertions.assertThat(accountService.findById(account.getId())
         .getStatus())
         .isEqualTo(STATUS_NOT_FOUND());
 
-    verify(accountRepository, never()).findById(any());
+    Mockito.verify(accountRepository, never())
+        .findById(any());
   }
 
   @Test
-  void updateOne_whenAccountIsExistsAndUsernameIsUnique_success() {
+  void findById_whenRequestIsNull_shouldReturnStatusNoContentAndNeverFound() {
+
+    Assertions.assertThat(accountService.findById(null)
+        .getStatus())
+        .isEqualTo(STATUS_NO_CONTENT());
+
+    Mockito.verify(accountRepository, never())
+        .findById(any());
+  }
+
+  @Test
+  void updateOne_whenAccountExistsAndUsernameIsUnique_success() {
 
     Account existedAccount = new Account();
     existedAccount.setId(1L);
@@ -286,11 +316,12 @@ class AccountServiceImplTest {
 
     accountService.updateOne(existedAccount.getId(), updateAccountRequest);
 
-    verify(accountRepository).save(any());
+    Mockito.verify(accountRepository)
+        .save(any());
   }
 
   @Test
-  void updateOne_whenAccountIsNotExists_shouldReturnStatusNotFoundAndNeverSaved() {
+  void updateOne_whenAccountDoesNotExists_shouldReturnStatusNotFoundAndNeverSaved() {
 
     Account updateAccount = new Account();
     updateAccount.setId(1L);
@@ -309,7 +340,8 @@ class AccountServiceImplTest {
         .getStatus())
         .isEqualTo(STATUS_NOT_FOUND());
 
-    verify(accountRepository, never()).save(updateAccount);
+    Mockito.verify(accountRepository, never())
+        .save(updateAccount);
   }
 
   @Test
@@ -338,7 +370,8 @@ class AccountServiceImplTest {
         .getStatus())
         .isEqualTo(STATUS_CONFLICT());
 
-    verify(accountRepository, never()).save(updateAccount);
+    Mockito.verify(accountRepository, never())
+        .save(updateAccount);
   }
 
   @Test
@@ -357,7 +390,8 @@ class AccountServiceImplTest {
     accountService.deleteById(account.getId());
 
     ArgumentCaptor<Long> accountIdArgumentCaptor = ArgumentCaptor.forClass(Long.class);
-    verify(accountRepository).deleteById(accountIdArgumentCaptor.capture());
+    Mockito.verify(accountRepository)
+        .deleteById(accountIdArgumentCaptor.capture());
 
     Long capturedStudentId = accountIdArgumentCaptor.getValue();
     Assertions.assertThat(capturedStudentId)
@@ -365,7 +399,7 @@ class AccountServiceImplTest {
   }
 
   @Test
-  void deleteById_whenAccountIsNotExists_shouldReturnNotFoundAndNeverDeleted() {
+  void deleteById_whenAccountDoesNotExists_shouldReturnStatusNotFoundAndNeverDeleted() {
 
     Account account = new Account();
     account.setId(1L);
@@ -381,12 +415,240 @@ class AccountServiceImplTest {
         .getStatus())
         .isEqualTo(STATUS_NOT_FOUND());
 
-    verify(accountRepository, never()).deleteById(account.getId());
+    Mockito.verify(accountRepository, never())
+        .deleteById(account.getId());
   }
 
   @Test
-  void follow() {}
+  void deleteById_whenRequestIsNull_shouldReturnStatusNoContentAndNeverDeleted() {
+
+    Assertions.assertThat(accountService.deleteById(null)
+        .getStatus())
+        .isEqualTo(STATUS_NO_CONTENT());
+
+    Mockito.verify(accountRepository, never())
+        .deleteById(any());
+  }
 
   @Test
-  void unfollow() {}
+  void follow_success() {
+
+    Account follower = new Account();
+    follower.setId(1L);
+    follower.setFirstName("vincent");
+    follower.setLastName("low");
+    follower.setBirthDate(LocalDate.MIN);
+    follower.setUsername("vincent.low");
+
+    Account followed = new Account();
+    followed.setId(2L);
+    followed.setFirstName("jamet");
+    followed.setLastName("ganteng");
+    followed.setBirthDate(LocalDate.MIN);
+    followed.setUsername("jamet.ganteng");
+
+    AccountRelationship accountRelationship = new AccountRelationship();
+    accountRelationship.setFollower(follower);
+    accountRelationship.setFollowed(followed);
+
+    CreateAccountRelationshipRequest request = new CreateAccountRelationshipRequest();
+    request.setFollowerId(accountRelationship.getFollower()
+        .getId());
+    request.setFollowedId(accountRelationship.getFollowed()
+        .getId());
+    BeanUtils.copyProperties(follower, request);
+    BeanUtils.copyProperties(followed, request);
+
+    BDDMockito.given(accountHelper.findOneAccount(follower.getId()))
+        .willReturn(accountRelationship.getFollower());
+    BDDMockito.given(accountHelper.findOneAccount(followed.getId()))
+        .willReturn(accountRelationship.getFollowed());
+
+    accountService.follow(request);
+
+    ArgumentCaptor<AccountRelationship> accountRelationshipArgumentCaptor =
+        ArgumentCaptor.forClass(AccountRelationship.class);
+    Mockito.verify(accountRelationshipRepository)
+        .save(accountRelationshipArgumentCaptor.capture());
+
+    AccountRelationship result = accountRelationshipArgumentCaptor.getValue();
+    Assertions.assertThat(result)
+        .usingRecursiveComparison()
+        .isEqualTo(accountRelationship);
+  }
+
+  @Test
+  void follow_whenFollowerAccountDoesNotExist_shouldReturnStatusUnprocessableAndNeverSaved() {
+
+    Account follower = new Account();
+    follower.setId(1L);
+    follower.setFirstName("vincent");
+    follower.setLastName("low");
+    follower.setBirthDate(LocalDate.MIN);
+    follower.setUsername("vincent.low");
+
+    Account followed = new Account();
+    followed.setId(2L);
+    followed.setFirstName("jamet");
+    followed.setLastName("ganteng");
+    followed.setBirthDate(LocalDate.MIN);
+    followed.setUsername("jamet.ganteng");
+
+    AccountRelationship accountRelationship = new AccountRelationship();
+    accountRelationship.setFollower(follower);
+    accountRelationship.setFollowed(followed);
+
+    CreateAccountRelationshipRequest request = new CreateAccountRelationshipRequest();
+    request.setFollowerId(accountRelationship.getFollower()
+        .getId());
+    request.setFollowedId(accountRelationship.getFollowed()
+        .getId());
+    BeanUtils.copyProperties(follower, request);
+    BeanUtils.copyProperties(followed, request);
+
+    BDDMockito.given(accountHelper.findOneAccount(follower.getId()))
+        .willReturn(null);
+
+    Assertions.assertThat(accountService.follow(request)
+        .getStatus())
+        .isEqualTo(STATUS_UNPROCESSABLE());
+
+    Mockito.verify(accountRelationshipRepository, never())
+        .save(accountRelationship);
+  }
+
+  @Test
+  void follow_whenFollowedAccountDoesNotExist_shouldReturnStatusUnprocessableAndNeverSaved() {
+
+    Account follower = new Account();
+    follower.setId(1L);
+    follower.setFirstName("vincent");
+    follower.setLastName("low");
+    follower.setBirthDate(LocalDate.MIN);
+    follower.setUsername("vincent.low");
+
+    Account followed = new Account();
+    followed.setId(2L);
+    followed.setFirstName("jamet");
+    followed.setLastName("ganteng");
+    followed.setBirthDate(LocalDate.MIN);
+    followed.setUsername("jamet.ganteng");
+
+    AccountRelationship accountRelationship = new AccountRelationship();
+    accountRelationship.setFollower(follower);
+    accountRelationship.setFollowed(followed);
+
+    CreateAccountRelationshipRequest request = new CreateAccountRelationshipRequest();
+    request.setFollowerId(accountRelationship.getFollower()
+        .getId());
+    request.setFollowedId(accountRelationship.getFollowed()
+        .getId());
+    BeanUtils.copyProperties(follower, request);
+    BeanUtils.copyProperties(followed, request);
+
+    BDDMockito.given(accountHelper.findOneAccount(follower.getId()))
+        .willReturn(accountRelationship.getFollower());
+    BDDMockito.given(accountHelper.findOneAccount(followed.getId()))
+        .willReturn(null);
+
+    Assertions.assertThat(accountService.follow(request)
+        .getStatus())
+        .isEqualTo(STATUS_UNPROCESSABLE());
+
+    Mockito.verify(accountRelationshipRepository, never())
+        .save(accountRelationship);
+  }
+
+  @Test
+  void follow_whenRequestIsNull_shouldReturnStatusNoContentAndNeverSaved() {
+
+    Assertions.assertThat(accountService.follow(null)
+        .getStatus())
+        .isEqualTo(STATUS_NO_CONTENT());
+
+    Mockito.verify(accountRelationshipRepository, never())
+        .save(any());
+  }
+
+  @Test
+  void unfollow_success() {
+
+    Account follower = new Account();
+    follower.setId(1L);
+    follower.setFirstName("vincent");
+    follower.setLastName("low");
+    follower.setBirthDate(LocalDate.MIN);
+    follower.setUsername("vincent.low");
+
+    Account followed = new Account();
+    followed.setId(2L);
+    followed.setFirstName("jamet");
+    followed.setLastName("ganteng");
+    followed.setBirthDate(LocalDate.MIN);
+    followed.setUsername("jamet.ganteng");
+
+    AccountRelationship accountRelationship = new AccountRelationship();
+    accountRelationship.setFollower(follower);
+    accountRelationship.setFollowed(followed);
+
+    CreateAccountRelationshipRequest request = new CreateAccountRelationshipRequest();
+    request.setFollowedId(accountRelationship.getFollowed()
+        .getId());
+    request.setFollowerId(accountRelationship.getFollower()
+        .getId());
+
+    BDDMockito.given(accountHelper.findOneRelationship(request))
+        .willReturn(accountRelationship);
+
+    accountService.unfollow(request);
+  }
+
+  @Test
+  void unfollow_whenRelationDoesNotExists_shouldReturnStatusUnprocessableAndNeverDeleted() {
+
+    Account follower = new Account();
+    follower.setId(1L);
+    follower.setFirstName("vincent");
+    follower.setLastName("low");
+    follower.setBirthDate(LocalDate.MIN);
+    follower.setUsername("vincent.low");
+
+    Account followed = new Account();
+    followed.setId(2L);
+    followed.setFirstName("jamet");
+    followed.setLastName("ganteng");
+    followed.setBirthDate(LocalDate.MIN);
+    followed.setUsername("jamet.ganteng");
+
+    AccountRelationship accountRelationship = new AccountRelationship();
+    accountRelationship.setFollower(follower);
+    accountRelationship.setFollowed(followed);
+
+    CreateAccountRelationshipRequest request = new CreateAccountRelationshipRequest();
+    request.setFollowedId(accountRelationship.getFollowed()
+        .getId());
+    request.setFollowerId(accountRelationship.getFollower()
+        .getId());
+
+    BDDMockito.given(accountHelper.findOneRelationship(request))
+        .willReturn(null);
+
+    Assertions.assertThat(accountService.unfollow(request)
+        .getStatus())
+        .isEqualTo(STATUS_UNPROCESSABLE());
+
+    Mockito.verify(accountRelationshipRepository, never())
+        .save(accountRelationship);
+  }
+
+  @Test
+  void unfollow_whenRequestIsNull_shouldReturnStatusNoContentAndNeverDeleted() {
+
+    Assertions.assertThat(accountService.unfollow(null)
+        .getStatus())
+        .isEqualTo(STATUS_NO_CONTENT());
+
+    Mockito.verify(accountRelationshipRepository, never())
+        .delete(any());
+  }
 }
