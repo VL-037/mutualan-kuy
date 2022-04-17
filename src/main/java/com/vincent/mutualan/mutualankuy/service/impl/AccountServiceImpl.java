@@ -168,6 +168,9 @@ public class AccountServiceImpl implements AccountService {
   private AccountResponse toAccountResponse(Account account) {
 
     AccountResponse accountResponse = new AccountResponse();
+    if (Objects.isNull(account))
+      return null;
+
     BeanUtils.copyProperties(account, accountResponse);
     return accountResponse;
   }
@@ -175,6 +178,9 @@ public class AccountServiceImpl implements AccountService {
   private Account saveOneAccount(CreateAccountRequest request) {
 
     Account newAccount = new Account();
+    if (Objects.isNull(request))
+      return null;
+
     BeanUtils.copyProperties(request, newAccount);
 
     return accountRepository.save(newAccount);
