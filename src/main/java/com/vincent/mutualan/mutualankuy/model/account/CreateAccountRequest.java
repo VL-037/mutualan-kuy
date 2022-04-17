@@ -1,6 +1,7 @@
 package com.vincent.mutualan.mutualankuy.model.account;
 
 import java.time.LocalDate;
+import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
@@ -37,4 +38,8 @@ public class CreateAccountRequest {
   // private String email;
   //
   // private String password;
+
+  private Date createdAt;
+
+  private Date updatedAt;
 }
