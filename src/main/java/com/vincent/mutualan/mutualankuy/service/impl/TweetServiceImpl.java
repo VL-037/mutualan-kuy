@@ -125,7 +125,6 @@ public class TweetServiceImpl implements TweetService {
     if (Objects.isNull(tweet))
       return getBaseResponse(String.format("tweet with id %d does not exist", tweetId), STATUS_NOT_FOUND());
 
-
     tweetRepository.delete(tweet);
 
     return getBaseResponse(true, STATUS_OK());

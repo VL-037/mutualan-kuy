@@ -4,6 +4,7 @@ import static com.vincent.mutualan.mutualankuy.helper.response.ResponseHelper.ST
 import static com.vincent.mutualan.mutualankuy.helper.response.ResponseHelper.STATUS_NOT_FOUND;
 import static com.vincent.mutualan.mutualankuy.helper.response.ResponseHelper.STATUS_NO_CONTENT;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -278,8 +279,10 @@ class AccountServiceImplTest {
     UpdateAccountRequest updateAccountRequest = new UpdateAccountRequest();
     BeanUtils.copyProperties(updatedAccount, updateAccountRequest);
 
-    BDDMockito.given(accountHelper.findOneAccount(existedAccount.getId())).willReturn(existedAccount);
-    BDDMockito.given(accountHelper.isPresent(updatedAccount.getUsername())).willReturn(false);
+    BDDMockito.given(accountHelper.findOneAccount(existedAccount.getId()))
+        .willReturn(existedAccount);
+    BDDMockito.given(accountHelper.isPresent(updatedAccount.getUsername()))
+        .willReturn(false);
 
     accountService.updateOne(existedAccount.getId(), updateAccountRequest);
 
@@ -299,10 +302,12 @@ class AccountServiceImplTest {
     UpdateAccountRequest updateAccountRequest = new UpdateAccountRequest();
     BeanUtils.copyProperties(updateAccount, updateAccountRequest);
 
-    BDDMockito.given(accountHelper.findOneAccount(updateAccount.getId())).willReturn(null);
+    BDDMockito.given(accountHelper.findOneAccount(updateAccount.getId()))
+        .willReturn(null);
 
-    Assertions.assertThat(accountService.updateOne(updateAccount.getId(), updateAccountRequest).getStatus())
-            .isEqualTo(STATUS_NOT_FOUND());
+    Assertions.assertThat(accountService.updateOne(updateAccount.getId(), updateAccountRequest)
+        .getStatus())
+        .isEqualTo(STATUS_NOT_FOUND());
 
     verify(accountRepository, never()).save(updateAccount);
   }
@@ -322,18 +327,62 @@ class AccountServiceImplTest {
     UpdateAccountRequest updateAccountRequest = new UpdateAccountRequest();
     BeanUtils.copyProperties(updateAccount, updateAccountRequest);
 
-    BDDMockito.given(accountHelper.findOneAccount(updateAccount.getId())).willReturn(updateAccount);
-    BDDMockito.given(accountHelper.isPresent(updateAccountRequest.getUsername())).willReturn(true);
-    BDDMockito.given(accountHelper.isUsernameEquals(updateAccountRequest.getUsername(), updateAccount.getUsername())).willReturn(false);
+    BDDMockito.given(accountHelper.findOneAccount(updateAccount.getId()))
+        .willReturn(updateAccount);
+    BDDMockito.given(accountHelper.isPresent(updateAccountRequest.getUsername()))
+        .willReturn(true);
+    BDDMockito.given(accountHelper.isUsernameEquals(updateAccountRequest.getUsername(), updateAccount.getUsername()))
+        .willReturn(false);
 
-    Assertions.assertThat(accountService.updateOne(updateAccount.getId(), updateAccountRequest).getStatus())
-            .isEqualTo(STATUS_CONFLICT());
+    Assertions.assertThat(accountService.updateOne(updateAccount.getId(), updateAccountRequest)
+        .getStatus())
+        .isEqualTo(STATUS_CONFLICT());
 
     verify(accountRepository, never()).save(updateAccount);
   }
 
   @Test
-  void deleteById() {}
+  void deleteById_success() {
+
+    Account account = new Account();
+    account.setId(1L);
+    account.setFirstName("vincent");
+    account.setLastName("low");
+    account.setBirthDate(LocalDate.MIN);
+    account.setUsername("vincent.low");
+
+    BDDMockito.given(accountHelper.findOneAccount(account.getId()))
+        .willReturn(account);
+
+    accountService.deleteById(account.getId());
+
+    ArgumentCaptor<Long> accountIdArgumentCaptor = ArgumentCaptor.forClass(Long.class);
+    verify(accountRepository).deleteById(accountIdArgumentCaptor.capture());
+
+    Long capturedStudentId = accountIdArgumentCaptor.getValue();
+    Assertions.assertThat(capturedStudentId)
+        .isEqualTo(account.getId());
+  }
+
+  @Test
+  void deleteById_whenAccountIsNotExists_shouldReturnNotFoundAndNeverDeleted() {
+
+    Account account = new Account();
+    account.setId(1L);
+    account.setFirstName("vincent");
+    account.setLastName("low");
+    account.setBirthDate(LocalDate.MIN);
+    account.setUsername("vincent.low");
+
+    BDDMockito.given(accountHelper.findOneAccount(anyLong()))
+        .willReturn(null);
+
+    Assertions.assertThat(accountService.deleteById(account.getId())
+        .getStatus())
+        .isEqualTo(STATUS_NOT_FOUND());
+
+    verify(accountRepository, never()).deleteById(account.getId());
+  }
 
   @Test
   void follow() {}
