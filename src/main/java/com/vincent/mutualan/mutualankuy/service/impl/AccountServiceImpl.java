@@ -17,7 +17,6 @@ import org.mapstruct.BeanMapping;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
 import com.vincent.mutualan.mutualankuy.entity.Account;
@@ -49,7 +48,7 @@ public class AccountServiceImpl implements AccountService {
   @Override
   public BaseResponse<?> createOne(CreateAccountRequest request) {
 
-    if (isPresent(request.getUsername()))
+    if (accountHelper.isPresent(request.getUsername()))
       return getBaseResponse(String.format("username is taken: %s", request.getUsername()), STATUS_CONFLICT());
 
     Account newAccount = saveOneAccount(request);
@@ -61,7 +60,7 @@ public class AccountServiceImpl implements AccountService {
   public BaseResponse<?> createMany(List<CreateAccountRequest> requests) {
 
     for (CreateAccountRequest request : requests) {
-      if (isPresent(request.getUsername()))
+      if (accountHelper.isPresent(request.getUsername()))
         return getBaseResponse(String.format("username is taken: %s", request.getUsername()), STATUS_CONFLICT());
     }
 
@@ -107,7 +106,7 @@ public class AccountServiceImpl implements AccountService {
     if (Objects.isNull(account))
       return getBaseResponse(String.format("account with id %d does not exist", id), STATUS_NOT_FOUND());
 
-    if (isPresent(request.getUsername()) && !isUsernameEquals(request, account))
+    if (accountHelper.isPresent(request.getUsername()) && !isUsernameEquals(request, account))
       return getBaseResponse(String.format("username is taken: %s", request.getUsername()), STATUS_CONFLICT());
 
     account.setFirstName(request.getFirstName());
@@ -190,12 +189,6 @@ public class AccountServiceImpl implements AccountService {
     BeanUtils.copyProperties(request, newAccount);
 
     return accountRepository.save(newAccount);
-  }
-
-  private Boolean isPresent(String username) {
-
-    return accountRepository.findOneByUsername(username)
-        .isPresent();
   }
 
   private Boolean isUsernameEquals(UpdateAccountRequest request, Account account) {
