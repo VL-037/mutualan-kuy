@@ -26,6 +26,12 @@ public class AccountHelper {
         .orElse(null);
   }
 
+  public Boolean isPresent(String username) {
+
+    return accountRepository.findOneByUsername(username)
+            .isPresent();
+  }
+
   public AccountRelationship findOneRelationship(CreateAccountRelationshipRequest request) {
 
     return accountRelationshipRepository.findOneAccountRelationship(request.getFollowerId(), request.getFollowedId())
