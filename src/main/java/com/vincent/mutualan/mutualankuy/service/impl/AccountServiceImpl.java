@@ -17,6 +17,7 @@ import org.mapstruct.BeanMapping;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
 import com.vincent.mutualan.mutualankuy.entity.Account;
@@ -64,12 +65,15 @@ public class AccountServiceImpl implements AccountService {
         return getBaseResponse(String.format("username is taken: %s", request.getUsername()), STATUS_CONFLICT());
     }
 
-    List<AccountResponse> accountResponses = requests.stream()
-        .map(this::saveOneAccount)
-        .collect(Collectors.toList())
-        .stream()
-        .map(this::toAccountResponse)
-        .collect(Collectors.toList());
+    List<Account> newAccounts = requests.stream()
+            .map(this::toAccount)
+            .collect(Collectors.toList());
+
+    List<Account> savedAccounts = accountRepository.saveAll(newAccounts);
+
+    List<AccountResponse> accountResponses = savedAccounts.stream()
+            .map(this::toAccountResponse)
+            .collect(Collectors.toList());
 
     return getBaseResponse(accountResponses, STATUS_OK());
   }
@@ -138,11 +142,13 @@ public class AccountServiceImpl implements AccountService {
 
     Account follower = accountHelper.findOneAccount(request.getFollowerId());
     if (Objects.isNull(follower))
-      return getBaseResponse(String.format("account with id %d does not exist", request.getFollowerId()), STATUS_UNPROCESSABLE());
+      return getBaseResponse(String.format("account with id %d does not exist", request.getFollowerId()),
+          STATUS_UNPROCESSABLE());
 
     Account followed = accountHelper.findOneAccount(request.getFollowedId());
     if (Objects.isNull(followed))
-      return getBaseResponse(String.format("account with id %d does not exist", request.getFollowedId()), STATUS_UNPROCESSABLE());
+      return getBaseResponse(String.format("account with id %d does not exist", request.getFollowedId()),
+          STATUS_UNPROCESSABLE());
 
     AccountRelationship followData = new AccountRelationship();
     followData.setFollower(follower);
@@ -196,6 +202,15 @@ public class AccountServiceImpl implements AccountService {
 
     return request.getUsername()
         .equals(account.getUsername());
+  }
+
+  private Account toAccount(CreateAccountRequest request) {
+
+    Account account = new Account();
+    if (Objects.isNull(request))
+      return null;
+    BeanUtils.copyProperties(request, account);
+    return account;
   }
 
   private AccountRelationshipResponse toAccountRelationshipResponse(AccountRelationship relationData) {
