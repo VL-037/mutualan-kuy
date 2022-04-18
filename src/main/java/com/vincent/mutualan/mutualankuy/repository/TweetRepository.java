@@ -14,7 +14,7 @@ import com.vincent.mutualan.mutualankuy.entity.Tweet;
 public interface TweetRepository extends JpaRepository<Tweet, Long> {
 
   @Query("SELECT t FROM Tweet t WHERE t.creator=(SELECT a FROM Account a WHERE a.id=?1)")
-  List<Tweet> findAllByAccountId(Long accountId);
+  Optional<List<Tweet>> findAllByAccountId(Long accountId);
 
   @Query("SELECT t FROM Tweet t WHERE t.creator=(SELECT a FROM Account a WHERE a.id=?1) AND t.id=?2")
   Optional<Tweet> findByTweetId(Long accountId, Long tweetId);

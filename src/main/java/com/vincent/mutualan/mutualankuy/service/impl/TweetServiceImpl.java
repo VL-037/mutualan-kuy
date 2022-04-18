@@ -45,7 +45,11 @@ public class TweetServiceImpl implements TweetService {
     if (Objects.isNull(account))
       return getBaseResponse(String.format("account with id %d does not exist", accountId), STATUS_NOT_FOUND());
 
-    List<Tweet> tweets = tweetRepository.findAllByAccountId(accountId);
+    List<Tweet> tweets = tweetRepository.findAllByAccountId(accountId)
+            .stream()
+            .findFirst()
+            .orElse(null);
+
     List<TweetResponse> tweetResponses = tweets.stream()
         .map(this::toTweetResponse)
         .collect(Collectors.toList());
