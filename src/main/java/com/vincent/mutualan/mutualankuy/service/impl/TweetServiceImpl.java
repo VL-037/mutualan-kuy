@@ -4,6 +4,7 @@ import static com.vincent.mutualan.mutualankuy.helper.response.ResponseHelper.ST
 import static com.vincent.mutualan.mutualankuy.helper.response.ResponseHelper.STATUS_OK;
 import static com.vincent.mutualan.mutualankuy.helper.response.ResponseHelper.getBaseResponse;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -46,9 +47,9 @@ public class TweetServiceImpl implements TweetService {
       return getBaseResponse(String.format("account with id %d does not exist", accountId), STATUS_NOT_FOUND());
 
     List<Tweet> tweets = tweetRepository.findAllByAccountId(accountId)
-            .stream()
-            .findFirst()
-            .orElse(null);
+        .stream()
+        .findFirst()
+        .orElse(new ArrayList<>());
 
     List<TweetResponse> tweetResponses = tweets.stream()
         .map(this::toTweetResponse)
