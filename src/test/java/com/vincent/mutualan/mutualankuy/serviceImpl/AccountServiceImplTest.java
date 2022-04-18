@@ -601,6 +601,15 @@ class AccountServiceImplTest {
         .willReturn(accountRelationship);
 
     accountService.unfollow(request);
+
+    ArgumentCaptor<AccountRelationship> accountRelationshipArgumentCaptor =
+        ArgumentCaptor.forClass(AccountRelationship.class);
+    Mockito.verify(accountRelationshipRepository)
+        .delete(accountRelationshipArgumentCaptor.capture());
+
+    AccountRelationship capturedAccountRelationship = accountRelationshipArgumentCaptor.getValue();
+    Assertions.assertThat(capturedAccountRelationship)
+        .isEqualTo(accountRelationship);
   }
 
   @Test
