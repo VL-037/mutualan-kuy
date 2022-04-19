@@ -34,6 +34,7 @@ import com.vincent.mutualan.mutualankuy.repository.AccountRelationshipRepository
 import com.vincent.mutualan.mutualankuy.repository.AccountRepository;
 import com.vincent.mutualan.mutualankuy.service.AccountService;
 import com.vincent.mutualan.mutualankuy.service.impl.AccountServiceImpl;
+import org.springframework.context.annotation.Bean;
 
 @ExtendWith(MockitoExtension.class)
 class AccountServiceImplTest {
@@ -55,14 +56,52 @@ class AccountServiceImplTest {
     accountService = new AccountServiceImpl(accountRepository, accountRelationshipRepository, accountHelper);
   }
 
-  @Test
-  void createOne_success() {
+  private Account initOneAccount() {
 
     Account account = new Account();
+    account.setId(1L);
     account.setFirstName("vincent");
     account.setLastName("low");
     account.setBirthDate(LocalDate.MIN);
     account.setUsername("vincent.low");
+
+    return account;
+  }
+
+  private List<Account> initManyAccounts() {
+
+    List<Account> accountList = new ArrayList<>();
+
+    Account account1 = new Account();
+    account1.setFirstName("A");
+    account1.setLastName("A");
+    account1.setBirthDate(LocalDate.MIN);
+    account1.setUsername("A.A");
+
+    Account account2 = new Account();
+    account2.setFirstName("B");
+    account2.setLastName("B");
+    account2.setBirthDate(LocalDate.MIN);
+    account2.setUsername("B.B");
+
+    Account account3 = new Account();
+    account3.setFirstName("C");
+    account3.setLastName("C");
+    account3.setBirthDate(LocalDate.MIN);
+    account3.setUsername("C.C");
+
+    accountList.add(account1);
+    accountList.add(account2);
+    accountList.add(account3);
+
+    return accountList;
+  }
+
+  @Test
+  void createOne_success() {
+
+    Account account = initOneAccount();
+    account.setId(null);
 
     CreateAccountRequest request = new CreateAccountRequest();
     BeanUtils.copyProperties(account, request);
@@ -82,11 +121,7 @@ class AccountServiceImplTest {
   @Test
   void createOne_whenUsernameIsExists_shouldReturnStatusConflictAndNeverSaved() {
 
-    Account account = new Account();
-    account.setFirstName("vincent");
-    account.setLastName("low");
-    account.setBirthDate(LocalDate.MIN);
-    account.setUsername("vincent.low");
+    Account account = initOneAccount();
 
     CreateAccountRequest request = new CreateAccountRequest();
     BeanUtils.copyProperties(account, request);
@@ -116,41 +151,14 @@ class AccountServiceImplTest {
   @Test
   void createMany_success() {
 
-    List<Account> accountList = new ArrayList<>();
+    List<Account> accountList = initManyAccounts();
     List<CreateAccountRequest> requestList = new ArrayList<>();
 
-    Account account1 = new Account();
-    account1.setFirstName("A");
-    account1.setLastName("A");
-    account1.setBirthDate(LocalDate.MIN);
-    account1.setUsername("A.A");
-
-    accountList.add(account1);
-    CreateAccountRequest request1 = new CreateAccountRequest();
-    BeanUtils.copyProperties(account1, request1);
-    requestList.add(request1);
-
-    Account account2 = new Account();
-    account2.setFirstName("B");
-    account2.setLastName("B");
-    account2.setBirthDate(LocalDate.MIN);
-    account2.setUsername("B.B");
-
-    accountList.add(account2);
-    CreateAccountRequest request2 = new CreateAccountRequest();
-    BeanUtils.copyProperties(account2, request2);
-    requestList.add(request2);
-
-    Account account3 = new Account();
-    account3.setFirstName("C");
-    account3.setLastName("C");
-    account3.setBirthDate(LocalDate.MIN);
-    account3.setUsername("C.C");
-
-    accountList.add(account3);
-    CreateAccountRequest request3 = new CreateAccountRequest();
-    BeanUtils.copyProperties(account3, request3);
-    requestList.add(request3);
+    for (int i = 0; i < accountList.size(); i++) {
+      CreateAccountRequest request = new CreateAccountRequest();
+      BeanUtils.copyProperties(accountList.get(i), request);
+      requestList.add(request);
+    }
 
     accountService.createMany(requestList);
 
@@ -170,41 +178,14 @@ class AccountServiceImplTest {
   @Test
   void createMany_whenUsernameIsExists_shouldReturnStatusConflictAndNeverSaved() {
 
-    List<Account> accountList = new ArrayList<>();
+    List<Account> accountList = initManyAccounts();
     List<CreateAccountRequest> requestList = new ArrayList<>();
 
-    Account account1 = new Account();
-    account1.setFirstName("A");
-    account1.setLastName("A");
-    account1.setBirthDate(LocalDate.MIN);
-    account1.setUsername("A.A");
-
-    accountList.add(account1);
-    CreateAccountRequest request1 = new CreateAccountRequest();
-    BeanUtils.copyProperties(account1, request1);
-    requestList.add(request1);
-
-    Account account2 = new Account();
-    account2.setFirstName("B");
-    account2.setLastName("B");
-    account2.setBirthDate(LocalDate.MIN);
-    account1.setUsername("B.B");
-
-    accountList.add(account2);
-    CreateAccountRequest request2 = new CreateAccountRequest();
-    BeanUtils.copyProperties(account2, request2);
-    requestList.add(request2);
-
-    Account account3 = new Account();
-    account3.setFirstName("C");
-    account3.setLastName("C");
-    account3.setBirthDate(LocalDate.MIN);
-    account3.setUsername("C.C");
-
-    accountList.add(account3);
-    CreateAccountRequest request3 = new CreateAccountRequest();
-    BeanUtils.copyProperties(account3, request3);
-    requestList.add(request3);
+    for (int i = 0; i < accountList.size(); i++) {
+      CreateAccountRequest request = new CreateAccountRequest();
+      BeanUtils.copyProperties(accountList.get(i), request);
+      requestList.add(request);
+    }
 
     BDDMockito.given(accountHelper.isPresent(anyString()))
         .willReturn(true);
@@ -251,14 +232,9 @@ class AccountServiceImplTest {
   @Test
   void findById_success() {
 
-    Account account = new Account();
-    account.setId(1L);
-    account.setFirstName("vincent");
-    account.setLastName("low");
-    account.setBirthDate(LocalDate.MIN);
-    account.setUsername("vincent.low");
+    Account account = initOneAccount();
 
-    accountService.findById(1L);
+    accountService.findById(account.getId());
 
     ArgumentCaptor<Long> studentIdArgumentCaptor = ArgumentCaptor.forClass(Long.class);
     Mockito.verify(accountHelper)
@@ -272,12 +248,7 @@ class AccountServiceImplTest {
   @Test
   void findById_whenAccountDoesNotExists_shouldReturnStatusNotFoundAndNeverFound() {
 
-    Account account = new Account();
-    account.setId(1L);
-    account.setFirstName("vincent");
-    account.setLastName("low");
-    account.setBirthDate(LocalDate.MIN);
-    account.setUsername("vincent.low");
+    Account account = initOneAccount();
 
     BDDMockito.given(accountHelper.findOneAccount(anyLong()))
         .willReturn(null);
@@ -304,18 +275,10 @@ class AccountServiceImplTest {
   @Test
   void updateOne_whenAccountExistsAndUsernameIsUnique_success() {
 
-    Account existedAccount = new Account();
-    existedAccount.setId(1L);
-    existedAccount.setFirstName("vincent");
-    existedAccount.setLastName("low");
-    existedAccount.setBirthDate(LocalDate.MIN);
-    existedAccount.setUsername("vincent.low");
+    Account existedAccount = initOneAccount();
 
-    Account updatedAccount = new Account();
-    updatedAccount.setFirstName("jamet");
-    updatedAccount.setLastName("low");
-    updatedAccount.setBirthDate(LocalDate.MIN);
-    updatedAccount.setUsername("jamet.low");
+    Account updatedAccount = initOneAccount();
+    updatedAccount.setUsername("jamet");
 
     UpdateAccountRequest updateAccountRequest = new UpdateAccountRequest();
     BeanUtils.copyProperties(updatedAccount, updateAccountRequest);
@@ -334,12 +297,7 @@ class AccountServiceImplTest {
   @Test
   void updateOne_whenAccountDoesNotExists_shouldReturnStatusNotFoundAndNeverSaved() {
 
-    Account updateAccount = new Account();
-    updateAccount.setId(1L);
-    updateAccount.setFirstName("vincent");
-    updateAccount.setLastName("low");
-    updateAccount.setBirthDate(LocalDate.MIN);
-    updateAccount.setUsername("vincent.low");
+    Account updateAccount = initOneAccount();
 
     UpdateAccountRequest updateAccountRequest = new UpdateAccountRequest();
     BeanUtils.copyProperties(updateAccount, updateAccountRequest);
@@ -358,14 +316,7 @@ class AccountServiceImplTest {
   @Test
   void updateOne_whenUsernameIsTaken_shouldReturnStatusConflictAndNeverSaved() {
 
-    Account updateAccount = new Account();
-    updateAccount.setId(1L);
-    updateAccount.setFirstName("vincent");
-    updateAccount.setMiddleName("middle");
-    updateAccount.setLastName("low");
-    updateAccount.setBirthDate(LocalDate.MIN);
-    updateAccount.setUsername("vincent.low");
-    updateAccount.setBio("just the two of us");
+    Account updateAccount = initOneAccount();
 
     UpdateAccountRequest updateAccountRequest = new UpdateAccountRequest();
     BeanUtils.copyProperties(updateAccount, updateAccountRequest);
@@ -388,12 +339,7 @@ class AccountServiceImplTest {
   @Test
   void deleteById_success() {
 
-    Account account = new Account();
-    account.setId(1L);
-    account.setFirstName("vincent");
-    account.setLastName("low");
-    account.setBirthDate(LocalDate.MIN);
-    account.setUsername("vincent.low");
+    Account account = initOneAccount();
 
     BDDMockito.given(accountHelper.findOneAccount(account.getId()))
         .willReturn(account);
@@ -412,12 +358,7 @@ class AccountServiceImplTest {
   @Test
   void deleteById_whenAccountDoesNotExists_shouldReturnStatusNotFoundAndNeverDeleted() {
 
-    Account account = new Account();
-    account.setId(1L);
-    account.setFirstName("vincent");
-    account.setLastName("low");
-    account.setBirthDate(LocalDate.MIN);
-    account.setUsername("vincent.low");
+    Account account = initOneAccount();
 
     BDDMockito.given(accountHelper.findOneAccount(anyLong()))
         .willReturn(null);
@@ -444,19 +385,11 @@ class AccountServiceImplTest {
   @Test
   void follow_success() {
 
-    Account follower = new Account();
-    follower.setId(1L);
-    follower.setFirstName("vincent");
-    follower.setLastName("low");
-    follower.setBirthDate(LocalDate.MIN);
-    follower.setUsername("vincent.low");
+    Account follower = initOneAccount();
 
-    Account followed = new Account();
+    Account followed = initOneAccount();
     followed.setId(2L);
     followed.setFirstName("jamet");
-    followed.setLastName("ganteng");
-    followed.setBirthDate(LocalDate.MIN);
-    followed.setUsername("jamet.ganteng");
 
     AccountRelationship accountRelationship = new AccountRelationship();
     accountRelationship.setFollower(follower);
@@ -491,19 +424,11 @@ class AccountServiceImplTest {
   @Test
   void follow_whenFollowerAccountDoesNotExist_shouldReturnStatusUnprocessableAndNeverSaved() {
 
-    Account follower = new Account();
-    follower.setId(1L);
-    follower.setFirstName("vincent");
-    follower.setLastName("low");
-    follower.setBirthDate(LocalDate.MIN);
-    follower.setUsername("vincent.low");
+    Account follower = initOneAccount();
 
-    Account followed = new Account();
+    Account followed = initOneAccount();
     followed.setId(2L);
     followed.setFirstName("jamet");
-    followed.setLastName("ganteng");
-    followed.setBirthDate(LocalDate.MIN);
-    followed.setUsername("jamet.ganteng");
 
     AccountRelationship accountRelationship = new AccountRelationship();
     accountRelationship.setFollower(follower);
@@ -531,19 +456,11 @@ class AccountServiceImplTest {
   @Test
   void follow_whenFollowedAccountDoesNotExist_shouldReturnStatusUnprocessableAndNeverSaved() {
 
-    Account follower = new Account();
-    follower.setId(1L);
-    follower.setFirstName("vincent");
-    follower.setLastName("low");
-    follower.setBirthDate(LocalDate.MIN);
-    follower.setUsername("vincent.low");
+    Account follower = initOneAccount();
 
-    Account followed = new Account();
+    Account followed = initOneAccount();
     followed.setId(2L);
     followed.setFirstName("jamet");
-    followed.setLastName("ganteng");
-    followed.setBirthDate(LocalDate.MIN);
-    followed.setUsername("jamet.ganteng");
 
     AccountRelationship accountRelationship = new AccountRelationship();
     accountRelationship.setFollower(follower);
@@ -584,19 +501,11 @@ class AccountServiceImplTest {
   @Test
   void unfollow_success() {
 
-    Account follower = new Account();
-    follower.setId(1L);
-    follower.setFirstName("vincent");
-    follower.setLastName("low");
-    follower.setBirthDate(LocalDate.MIN);
-    follower.setUsername("vincent.low");
+    Account follower = initOneAccount();
 
-    Account followed = new Account();
+    Account followed = initOneAccount();
     followed.setId(2L);
     followed.setFirstName("jamet");
-    followed.setLastName("ganteng");
-    followed.setBirthDate(LocalDate.MIN);
-    followed.setUsername("jamet.ganteng");
 
     AccountRelationship accountRelationship = new AccountRelationship();
     accountRelationship.setFollower(follower);
@@ -626,19 +535,11 @@ class AccountServiceImplTest {
   @Test
   void unfollow_whenRelationDoesNotExists_shouldReturnStatusUnprocessableAndNeverDeleted() {
 
-    Account follower = new Account();
-    follower.setId(1L);
-    follower.setFirstName("vincent");
-    follower.setLastName("low");
-    follower.setBirthDate(LocalDate.MIN);
-    follower.setUsername("vincent.low");
+    Account follower = initOneAccount();
 
-    Account followed = new Account();
+    Account followed = initOneAccount();
     followed.setId(2L);
     followed.setFirstName("jamet");
-    followed.setLastName("ganteng");
-    followed.setBirthDate(LocalDate.MIN);
-    followed.setUsername("jamet.ganteng");
 
     AccountRelationship accountRelationship = new AccountRelationship();
     accountRelationship.setFollower(follower);
