@@ -1,6 +1,7 @@
 package com.vincent.mutualan.mutualankuy.service.impl;
 
 import static com.vincent.mutualan.mutualankuy.helper.response.ResponseHelper.STATUS_NOT_FOUND;
+import static com.vincent.mutualan.mutualankuy.helper.response.ResponseHelper.STATUS_NO_CONTENT;
 import static com.vincent.mutualan.mutualankuy.helper.response.ResponseHelper.STATUS_OK;
 import static com.vincent.mutualan.mutualankuy.helper.response.ResponseHelper.getBaseResponse;
 
@@ -10,7 +11,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import lombok.AllArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,6 +25,8 @@ import com.vincent.mutualan.mutualankuy.model.tweet.TweetResponse;
 import com.vincent.mutualan.mutualankuy.model.tweet.UpdateTweetRequest;
 import com.vincent.mutualan.mutualankuy.repository.TweetRepository;
 import com.vincent.mutualan.mutualankuy.service.TweetService;
+
+import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
@@ -75,9 +77,13 @@ public class TweetServiceImpl implements TweetService {
   @Override
   public BaseResponse<?> createOne(Long accountId, CreateTweetRequest request) {
 
+    if (Objects.isNull(request))
+      return getBaseResponse(String.format("empty request body"), STATUS_NO_CONTENT());
+
     Account creator = accountHelper.findOneAccount(accountId);
     if (Objects.isNull(creator))
       return getBaseResponse(String.format("account with id %d does not exist", accountId), STATUS_NOT_FOUND());
+
     Tweet newTweet = saveOneTweet(creator, request);
 
     return getBaseResponse(toTweetResponse(newTweet), STATUS_OK());
@@ -86,18 +92,34 @@ public class TweetServiceImpl implements TweetService {
   @Override
   public BaseResponse<?> createMany(Long accountId, List<CreateTweetRequest> requests) {
 
+    if (Objects.isNull(requests))
+      return getBaseResponse(String.format("empty request body"), STATUS_NO_CONTENT());
+
     Account creator = accountHelper.findOneAccount(accountId);
     if (Objects.isNull(creator))
       return getBaseResponse(String.format("account with id %d does not exist", accountId), STATUS_NOT_FOUND());
 
-    List<TweetResponse> tweetResponses = requests.stream()
-        .map(request -> saveOneTweet(creator, request))
-        .collect(Collectors.toList())
-        .stream()
+    List<Tweet> newTweets = requests.stream()
+        .map(this::toTweet)
+        .collect(Collectors.toList());
+
+    if (newTweets.size() == 0)
+      return getBaseResponse(String.format("empty request body"), STATUS_NO_CONTENT());
+
+    List<Tweet> savedTweets = tweetRepository.saveAll(newTweets);
+
+    List<TweetResponse> tweetResponses = savedTweets.stream()
         .map(this::toTweetResponse)
         .collect(Collectors.toList());
 
     return getBaseResponse(tweetResponses, STATUS_OK());
+  }
+
+  private Tweet toTweet(CreateTweetRequest request) {
+
+    Tweet tweet = new Tweet();
+    BeanUtils.copyProperties(request, tweet);
+    return tweet;
   }
 
   @Override
@@ -137,10 +159,14 @@ public class TweetServiceImpl implements TweetService {
 
   private TweetResponse toTweetResponse(Tweet tweet) {
 
+    if (Objects.isNull(tweet))
+      return null;
+
     TweetResponse tweetResponse = new TweetResponse();
     tweetResponse.setCreatorId(tweet.getCreator()
         .getId());
     BeanUtils.copyProperties(tweet, tweetResponse);
+
     return tweetResponse;
   }
 
@@ -150,6 +176,8 @@ public class TweetServiceImpl implements TweetService {
     newTweet.setCreator(creator);
     BeanUtils.copyProperties(request, newTweet);
 
-    return tweetRepository.save(newTweet);
+    Tweet saved = tweetRepository.save(newTweet);
+
+    return saved;
   }
 }

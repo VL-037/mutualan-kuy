@@ -20,7 +20,7 @@ public class ResponseHelper {
     return HttpStatus.OK.value();
   }
 
-  public final static Integer STATUS_NO_CONTENT() { // 200
+  public final static Integer STATUS_NO_CONTENT() { // 204
 
     return HttpStatus.NO_CONTENT.value();
   }
