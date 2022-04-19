@@ -76,6 +76,9 @@ public class AccountServiceImpl implements AccountService {
         .map(this::toAccount)
         .collect(Collectors.toList());
 
+    if (newAccounts.size() == 0)
+      return getBaseResponse(String.format("empty request body"), STATUS_NO_CONTENT());
+
     List<Account> savedAccounts = accountRepository.saveAll(newAccounts);
 
     List<AccountResponse> accountResponses = savedAccounts.stream()
@@ -209,8 +212,6 @@ public class AccountServiceImpl implements AccountService {
   private Account toAccount(CreateAccountRequest request) {
 
     Account account = new Account();
-    if (Objects.isNull(request))
-      return null;
     BeanUtils.copyProperties(request, account);
     return account;
   }

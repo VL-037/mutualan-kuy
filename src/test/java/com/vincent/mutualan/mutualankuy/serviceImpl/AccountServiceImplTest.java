@@ -218,6 +218,17 @@ class AccountServiceImplTest {
   }
 
   @Test
+  void createMany_whenRequestIsEmptyList_shouldReturnNoContentAndNeverSaved() {
+
+    Assertions.assertThat(accountService.createMany(new ArrayList<>())
+        .getStatus())
+        .isEqualTo(STATUS_NO_CONTENT());
+
+    Mockito.verify(accountRepository, never())
+        .saveAll(any());
+  }
+
+  @Test
   void createMany_whenRequestIsNull_shouldReturnStatusNoContentAndNeverSaved() {
 
     Assertions.assertThat(accountService.createMany(null)
