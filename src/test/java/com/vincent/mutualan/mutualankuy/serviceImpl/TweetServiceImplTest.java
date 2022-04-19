@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import com.vincent.mutualan.mutualankuy.model.account.CreateAccountRequest;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,13 +54,52 @@ class TweetServiceImplTest {
     tweetService = new TweetServiceImpl(tweetRepository, accountHelper, tweetHelper);
   }
 
-  @Test
-  void findAllByAccountId_whenAccountExistsAndTweetListIsNotNull_success() {
+  private Account initOneAccount() {
 
-    Account account = new Account();
-    account.setId(1L);
-    account.getTweets()
-        .addAll(new ArrayList<>());
+    Account creator = new Account();
+    creator.setId(1L);
+    creator.setFirstName("vincent");
+    creator.setLastName("low");
+    creator.setBirthDate(LocalDate.MIN);
+    creator.setUsername("vincent.low");
+
+    return creator;
+  }
+
+  private Tweet initOneTweet() {
+
+    Tweet tweet = new Tweet();
+    tweet.setId(1L);
+
+    tweet.setMessage("tweet #1");
+    return tweet;
+  }
+
+  private List<Tweet> initManyTweets() {
+
+    List<Tweet> tweetList = new ArrayList<>();
+
+    Tweet tweet1 = new Tweet();
+    tweet1.setMessage("tweet #1");
+
+    Tweet tweet2 = new Tweet();
+    tweet1.setMessage("tweet #1");
+
+    Tweet tweet3 = new Tweet();
+    tweet1.setMessage("tweet #1");
+
+    tweetList.add(tweet1);
+    tweetList.add(tweet2);
+    tweetList.add(tweet3);
+
+    return tweetList;
+  }
+
+  @Test
+  void findAllByAccountId_whenAccountExistsAndTweetListIsIsEmptyList_success() {
+
+    Account account = initOneAccount();
+    account.setTweets(new ArrayList<>());
 
     BDDMockito.given(accountHelper.findOneAccount(account.getId()))
         .willReturn(account);
@@ -67,25 +107,6 @@ class TweetServiceImplTest {
 
     Mockito.verify(tweetRepository)
         .findAllByAccountId(account.getId());
-  }
-
-  @Test
-  void findAllByAccountId_whenAccountExistsAndTweetListIsEmpty_shouldReturnStatusOkAndEmptyTweetList() {
-
-    Account account = new Account();
-    account.setId(1L);
-    account.setTweets(new ArrayList<>());
-
-    BDDMockito.given(accountHelper.findOneAccount(account.getId()))
-        .willReturn(account);
-    BDDMockito.given(tweetRepository.findAllByAccountId(account.getId()))
-        .willReturn(Optional.of(new ArrayList<>()));
-
-    tweetService.findAllByAccountId(account.getId());
-
-    Assertions.assertThat(tweetService.findAllByAccountId(account.getId())
-        .getStatus())
-        .isEqualTo(STATUS_OK());
 
     Assertions.assertThat(tweetService.findAllByAccountId(account.getId())
         .getData())
@@ -109,11 +130,9 @@ class TweetServiceImplTest {
   @Test
   void findOneByTweetId_whenAccountExistsAndTweetExists_success() {
 
-    Account creator = new Account();
-    creator.setId(1L);
+    Account creator = initOneAccount();
 
-    Tweet tweet = new Tweet();
-    tweet.setId(1L);
+    Tweet tweet = initOneTweet();
     tweet.setCreator(creator);
 
     creator.getTweets()
@@ -136,11 +155,9 @@ class TweetServiceImplTest {
   @Test
   void findOneByTweetId_whenAccountExistsAndTweetDoesNotExists_shouldReturnStatusNotFound() {
 
-    Account creator = new Account();
-    creator.setId(1L);
+    Account creator = initOneAccount();
 
-    Tweet tweet = new Tweet();
-    tweet.setId(1L);
+    Tweet tweet = initOneTweet();
     tweet.setCreator(creator);
 
     creator.getTweets()
@@ -159,11 +176,9 @@ class TweetServiceImplTest {
   @Test
   void findOneByTweetId_whenAccountDoesNotExist_shouldReturnStatusNotFoundAndNeverFound() {
 
-    Account creator = new Account();
-    creator.setId(1L);
+    Account creator = initOneAccount();
 
-    Tweet tweet = new Tweet();
-    tweet.setId(1L);
+    Tweet tweet = initOneTweet();
     tweet.setCreator(creator);
 
     creator.getTweets()
@@ -183,15 +198,10 @@ class TweetServiceImplTest {
   @Test
   void createOne_success() {
 
-    Account creator = new Account();
-    creator.setId(1L);
-    creator.setFirstName("vincent");
-    creator.setLastName("low");
-    creator.setBirthDate(LocalDate.MIN);
-    creator.setUsername("vincent.low");
+    Account creator = initOneAccount();
 
-    Tweet expected = new Tweet();
-    expected.setMessage("tweet #1");
+    Tweet expected = initOneTweet();
+    expected.setId(null);
     expected.setCreator(creator);
 
     CreateTweetRequest request = new CreateTweetRequest();
@@ -215,15 +225,9 @@ class TweetServiceImplTest {
   @Test
   void createOne_whenAccountDoesNotExists_shouldReturnStatusNotFoundAndNeverSaved() {
 
-    Account creator = new Account();
-    creator.setId(1L);
-    creator.setFirstName("vincent");
-    creator.setLastName("low");
-    creator.setBirthDate(LocalDate.MIN);
-    creator.setUsername("vincent.low");
+    Account creator = initOneAccount();
 
-    Tweet expected = new Tweet();
-    expected.setMessage("tweet #1");
+    Tweet expected = initOneTweet();
     expected.setCreator(creator);
 
     CreateTweetRequest request = new CreateTweetRequest();
@@ -243,12 +247,7 @@ class TweetServiceImplTest {
   @Test
   void createOne_whenAccountExistsAndRequestIsNull_shouldReturnStatusNoContentAndNeverSaved() {
 
-    Account creator = new Account();
-    creator.setId(1L);
-    creator.setFirstName("vincent");
-    creator.setLastName("low");
-    creator.setBirthDate(LocalDate.MIN);
-    creator.setUsername("vincent.low");
+    Account creator = initOneAccount();
 
     Assertions.assertThat(tweetService.createOne(creator.getId(), null)
         .getStatus())
@@ -261,39 +260,16 @@ class TweetServiceImplTest {
   @Test
   void createMany_success() {
 
-    Account creator = new Account();
-    creator.setId(1L);
-    creator.setFirstName("vincent");
-    creator.setLastName("low");
-    creator.setBirthDate(LocalDate.MIN);
-    creator.setUsername("vincent.low");
+    Account creator = initOneAccount();
 
-    List<Tweet> tweetList = new ArrayList<>();
+    List<Tweet> tweetList = initManyTweets();
     List<CreateTweetRequest> requestList = new ArrayList<>();
 
-    Tweet tweet1 = new Tweet();
-    tweet1.setMessage("tweet #1");
-
-    tweetList.add(tweet1);
-    CreateTweetRequest request1 = new CreateTweetRequest();
-    BeanUtils.copyProperties(tweet1, request1);
-    requestList.add(request1);
-
-    Tweet tweet2 = new Tweet();
-    tweet2.setMessage("tweet #2");
-
-    tweetList.add(tweet2);
-    CreateTweetRequest request2 = new CreateTweetRequest();
-    BeanUtils.copyProperties(tweet2, request2);
-    requestList.add(request2);
-
-    Tweet tweet3 = new Tweet();
-    tweet3.setMessage("tweet #3");
-
-    tweetList.add(tweet3);
-    CreateTweetRequest request3 = new CreateTweetRequest();
-    BeanUtils.copyProperties(tweet3, request3);
-    requestList.add(request3);
+    for (int i = 0; i < tweetList.size(); i++) {
+      CreateTweetRequest request = new CreateTweetRequest();
+      BeanUtils.copyProperties(tweetList.get(i), request);
+      requestList.add(request);
+    }
 
     BDDMockito.given(accountHelper.findOneAccount(creator.getId()))
         .willReturn(creator);
@@ -316,12 +292,7 @@ class TweetServiceImplTest {
   @Test
   void createMany_whenAccountExistsAndRequestIsNull_shouldReturnStatusNoContentAndNeverSaved() {
 
-    Account creator = new Account();
-    creator.setId(1L);
-    creator.setFirstName("vincent");
-    creator.setLastName("low");
-    creator.setBirthDate(LocalDate.MIN);
-    creator.setUsername("vincent.low");
+    Account creator = initOneAccount();
 
     Assertions.assertThat(tweetService.createMany(creator.getId(), null)
         .getStatus())
@@ -334,12 +305,7 @@ class TweetServiceImplTest {
   @Test
   void createMany_whenAccountExistsAndRequestIsEmptyList_shouldReturnStatusNoContentAndNeverSaved() {
 
-    Account creator = new Account();
-    creator.setId(1L);
-    creator.setFirstName("vincent");
-    creator.setLastName("low");
-    creator.setBirthDate(LocalDate.MIN);
-    creator.setUsername("vincent.low");
+    Account creator = initOneAccount();
 
     BDDMockito.given(accountHelper.findOneAccount(creator.getId()))
         .willReturn(creator);
@@ -355,12 +321,7 @@ class TweetServiceImplTest {
   @Test
   void createMany_whenAccountDoesNotExists_shouldReturnStatusNotFoundAndNeverSaved() {
 
-    Account creator = new Account();
-    creator.setId(1L);
-    creator.setFirstName("vincent");
-    creator.setLastName("low");
-    creator.setBirthDate(LocalDate.MIN);
-    creator.setUsername("vincent.low");
+    Account creator = initOneAccount();
 
     BDDMockito.given(accountHelper.findOneAccount(anyLong()))
         .willReturn(null);
@@ -376,16 +337,9 @@ class TweetServiceImplTest {
   @Test
   void updateOne_whenAccountExistsAndTweetExists_success() {
 
-    Account creator = new Account();
-    creator.setId(1L);
-    creator.setFirstName("vincent");
-    creator.setLastName("low");
-    creator.setBirthDate(LocalDate.MIN);
-    creator.setUsername("vincent.low");
+    Account creator = initOneAccount();
 
-    Tweet tweet = new Tweet();
-    tweet.setId(1L);
-    tweet.setMessage("tweet #1");
+    Tweet tweet = initOneTweet();
     tweet.setCreator(creator);
 
     UpdateTweetRequest request = new UpdateTweetRequest();
@@ -416,16 +370,9 @@ class TweetServiceImplTest {
   @Test
   void updateOne_whenAccountDoesNotExists_shouldReturnStatusNotFoundAndNeverSaved() {
 
-    Account creator = new Account();
-    creator.setId(1L);
-    creator.setFirstName("vincent");
-    creator.setLastName("low");
-    creator.setBirthDate(LocalDate.MIN);
-    creator.setUsername("vincent.low");
+    Account creator = initOneAccount();
 
-    Tweet tweet = new Tweet();
-    tweet.setId(1L);
-    tweet.setMessage("tweet #1");
+    Tweet tweet = initOneTweet();
     tweet.setCreator(creator);
 
     UpdateTweetRequest request = new UpdateTweetRequest();
@@ -445,16 +392,9 @@ class TweetServiceImplTest {
   @Test
   void updateOne_whenAccountExistsAndTweetDoesNotExists_shouldReturnStatusNotFoundAndNeverSaved() {
 
-    Account creator = new Account();
-    creator.setId(1L);
-    creator.setFirstName("vincent");
-    creator.setLastName("low");
-    creator.setBirthDate(LocalDate.MIN);
-    creator.setUsername("vincent.low");
+    Account creator = initOneAccount();
 
-    Tweet tweet = new Tweet();
-    tweet.setId(1L);
-    tweet.setMessage("tweet #1");
+    Tweet tweet = initOneTweet();
     tweet.setCreator(creator);
 
     UpdateTweetRequest request = new UpdateTweetRequest();
@@ -476,16 +416,9 @@ class TweetServiceImplTest {
   @Test
   void updateOne_whenAccountExistsAndRequestIsNull_shouldReturnNoContentAndNeverSaved() {
 
-    Account creator = new Account();
-    creator.setId(1L);
-    creator.setFirstName("vincent");
-    creator.setLastName("low");
-    creator.setBirthDate(LocalDate.MIN);
-    creator.setUsername("vincent.low");
+    Account creator = initOneAccount();
 
-    Tweet tweet = new Tweet();
-    tweet.setId(1L);
-    tweet.setMessage("tweet #1");
+    Tweet tweet = initOneTweet();
     tweet.setCreator(creator);
 
     Assertions.assertThat(tweetService.updateOne(creator.getId(), tweet.getId(), null)
@@ -499,16 +432,9 @@ class TweetServiceImplTest {
   @Test
   void deleteOne_whenAccountExistsAndTweetExists_success() {
 
-    Account creator = new Account();
-    creator.setId(1L);
-    creator.setFirstName("vincent");
-    creator.setLastName("low");
-    creator.setBirthDate(LocalDate.MIN);
-    creator.setUsername("vincent.low");
+    Account creator = initOneAccount();
 
-    Tweet tweet = new Tweet();
-    tweet.setId(1L);
-    tweet.setMessage("tweet #1");
+    Tweet tweet = initOneTweet();
     tweet.setCreator(creator);
 
     BDDMockito.given(accountHelper.findOneAccount(creator.getId()))
@@ -530,16 +456,9 @@ class TweetServiceImplTest {
   @Test
   void deleteOne_whenAccountDoesNotExists_shouldReturnStatusNotFoundAndNeveDeleted() {
 
-    Account creator = new Account();
-    creator.setId(1L);
-    creator.setFirstName("vincent");
-    creator.setLastName("low");
-    creator.setBirthDate(LocalDate.MIN);
-    creator.setUsername("vincent.low");
+    Account creator = initOneAccount();
 
-    Tweet tweet = new Tweet();
-    tweet.setId(1L);
-    tweet.setMessage("tweet #1");
+    Tweet tweet = initOneTweet();
     tweet.setCreator(creator);
 
     BDDMockito.given(accountHelper.findOneAccount(anyLong()))
@@ -556,16 +475,9 @@ class TweetServiceImplTest {
   @Test
   void deleteOne_whenAccountExistsAndTweetDoesNotExist_shouldReturnStatusNotFoundAndNeverDeleted() {
 
-    Account creator = new Account();
-    creator.setId(1L);
-    creator.setFirstName("vincent");
-    creator.setLastName("low");
-    creator.setBirthDate(LocalDate.MIN);
-    creator.setUsername("vincent.low");
+    Account creator = initOneAccount();
 
-    Tweet tweet = new Tweet();
-    tweet.setId(1L);
-    tweet.setMessage("tweet #1");
+    Tweet tweet = initOneTweet();
     tweet.setCreator(creator);
 
     BDDMockito.given(accountHelper.findOneAccount(creator.getId()))
@@ -584,12 +496,7 @@ class TweetServiceImplTest {
   @Test
   void deleteOne_whenAccountExistsAndRequestIsNull_shouldReturnStatusNotFoundAndNeverSaved() {
 
-    Account creator = new Account();
-    creator.setId(1L);
-    creator.setFirstName("vincent");
-    creator.setLastName("low");
-    creator.setBirthDate(LocalDate.MIN);
-    creator.setUsername("vincent.low");
+    Account creator = initOneAccount();
 
     BDDMockito.given(accountHelper.findOneAccount(creator.getId()))
         .willReturn(creator);
