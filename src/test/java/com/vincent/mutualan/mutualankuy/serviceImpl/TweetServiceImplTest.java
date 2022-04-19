@@ -5,7 +5,6 @@ import static com.vincent.mutualan.mutualankuy.helper.response.ResponseHelper.ST
 import static com.vincent.mutualan.mutualankuy.helper.response.ResponseHelper.STATUS_OK;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.never;
 
 import java.time.LocalDate;
@@ -14,7 +13,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.assertj.core.api.Assertions;
-import org.checkerframework.checker.units.qual.C;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,6 +28,7 @@ import com.vincent.mutualan.mutualankuy.entity.Tweet;
 import com.vincent.mutualan.mutualankuy.helper.account.AccountHelper;
 import com.vincent.mutualan.mutualankuy.helper.tweet.TweetHelper;
 import com.vincent.mutualan.mutualankuy.model.tweet.CreateTweetRequest;
+import com.vincent.mutualan.mutualankuy.model.tweet.UpdateTweetRequest;
 import com.vincent.mutualan.mutualankuy.repository.TweetRepository;
 import com.vincent.mutualan.mutualankuy.service.TweetService;
 import com.vincent.mutualan.mutualankuy.service.impl.TweetServiceImpl;
@@ -343,7 +342,7 @@ class TweetServiceImplTest {
     creator.setUsername("vincent.low");
 
     BDDMockito.given(accountHelper.findOneAccount(creator.getId()))
-            .willReturn(creator);
+        .willReturn(creator);
 
     Assertions.assertThat(tweetService.createMany(creator.getId(), new ArrayList<>())
         .getStatus())
@@ -375,10 +374,231 @@ class TweetServiceImplTest {
   }
 
   @Test
-  void updateOne() {
+  void updateOne_whenAccountExistsAndTweetExists_success() {
 
+    Account creator = new Account();
+    creator.setId(1L);
+    creator.setFirstName("vincent");
+    creator.setLastName("low");
+    creator.setBirthDate(LocalDate.MIN);
+    creator.setUsername("vincent.low");
+
+    Tweet tweet = new Tweet();
+    tweet.setId(1L);
+    tweet.setMessage("tweet #1");
+    tweet.setCreator(creator);
+
+    UpdateTweetRequest request = new UpdateTweetRequest();
+    request.setMessage("tweet #1 updated");
+
+    BDDMockito.given(accountHelper.findOneAccount(creator.getId()))
+        .willReturn(creator);
+    BDDMockito.given(tweetHelper.findOneTweet(creator.getId(), tweet.getId()))
+        .willReturn(tweet);
+
+    tweetService.updateOne(creator.getId(), tweet.getId(), request);
+
+    ArgumentCaptor<Tweet> tweetArgumentCaptor = ArgumentCaptor.forClass(Tweet.class);
+    Mockito.verify(tweetRepository)
+        .save(tweetArgumentCaptor.capture());
+
+    Tweet result = tweetArgumentCaptor.getValue();
+    Assertions.assertThat(result.getId())
+        .isEqualTo(tweet.getId());
+
+    Assertions.assertThat(result.getMessage())
+        .isEqualTo(request.getMessage());
+
+    Mockito.verify(tweetRepository)
+        .save(any());
   }
 
   @Test
-  void deleteOne() {}
+  void updateOne_whenAccountDoesNotExists_shouldReturnStatusNotFoundAndNeverSaved() {
+
+    Account creator = new Account();
+    creator.setId(1L);
+    creator.setFirstName("vincent");
+    creator.setLastName("low");
+    creator.setBirthDate(LocalDate.MIN);
+    creator.setUsername("vincent.low");
+
+    Tweet tweet = new Tweet();
+    tweet.setId(1L);
+    tweet.setMessage("tweet #1");
+    tweet.setCreator(creator);
+
+    UpdateTweetRequest request = new UpdateTweetRequest();
+    request.setMessage("tweet #1 updated");
+
+    BDDMockito.given(accountHelper.findOneAccount(anyLong()))
+        .willReturn(null);
+
+    Assertions.assertThat(tweetService.updateOne(creator.getId(), tweet.getId(), request)
+        .getStatus())
+        .isEqualTo(STATUS_NOT_FOUND());
+
+    Mockito.verify(tweetRepository, never())
+        .save(any());
+  }
+
+  @Test
+  void updateOne_whenAccountExistsAndTweetDoesNotExists_shouldReturnStatusNotFoundAndNeverSaved() {
+
+    Account creator = new Account();
+    creator.setId(1L);
+    creator.setFirstName("vincent");
+    creator.setLastName("low");
+    creator.setBirthDate(LocalDate.MIN);
+    creator.setUsername("vincent.low");
+
+    Tweet tweet = new Tweet();
+    tweet.setId(1L);
+    tweet.setMessage("tweet #1");
+    tweet.setCreator(creator);
+
+    UpdateTweetRequest request = new UpdateTweetRequest();
+    request.setMessage("tweet #1 updated");
+
+    BDDMockito.given(accountHelper.findOneAccount(creator.getId()))
+        .willReturn(creator);
+    BDDMockito.given(tweetHelper.findOneTweet(creator.getId(), tweet.getId()))
+        .willReturn(null);
+
+    Assertions.assertThat(tweetService.updateOne(creator.getId(), tweet.getId(), request)
+        .getStatus())
+        .isEqualTo(STATUS_NOT_FOUND());
+
+    Mockito.verify(tweetRepository, never())
+        .save(any());
+  }
+
+  @Test
+  void updateOne_whenAccountExistsAndRequestIsNull_shouldReturnNoContentAndNeverSaved() {
+
+    Account creator = new Account();
+    creator.setId(1L);
+    creator.setFirstName("vincent");
+    creator.setLastName("low");
+    creator.setBirthDate(LocalDate.MIN);
+    creator.setUsername("vincent.low");
+
+    Tweet tweet = new Tweet();
+    tweet.setId(1L);
+    tweet.setMessage("tweet #1");
+    tweet.setCreator(creator);
+
+    Assertions.assertThat(tweetService.updateOne(creator.getId(), tweet.getId(), null)
+        .getStatus())
+        .isEqualTo(STATUS_NO_CONTENT());
+
+    Mockito.verify(tweetRepository, never())
+        .save(any());
+  }
+
+  @Test
+  void deleteOne_whenAccountExistsAndTweetExists_success() {
+
+    Account creator = new Account();
+    creator.setId(1L);
+    creator.setFirstName("vincent");
+    creator.setLastName("low");
+    creator.setBirthDate(LocalDate.MIN);
+    creator.setUsername("vincent.low");
+
+    Tweet tweet = new Tweet();
+    tweet.setId(1L);
+    tweet.setMessage("tweet #1");
+    tweet.setCreator(creator);
+
+    BDDMockito.given(accountHelper.findOneAccount(creator.getId()))
+        .willReturn(creator);
+    BDDMockito.given(tweetHelper.findOneTweet(creator.getId(), tweet.getId()))
+        .willReturn(tweet);
+
+    tweetService.deleteOne(creator.getId(), tweet.getId());
+
+    ArgumentCaptor<Tweet> tweetArgumentCaptor = ArgumentCaptor.forClass(Tweet.class);
+    Mockito.verify(tweetRepository)
+        .delete(tweetArgumentCaptor.capture());
+
+    Tweet capturedTweet = tweetArgumentCaptor.getValue();
+    Assertions.assertThat(capturedTweet.getId())
+        .isEqualTo(tweet.getId());
+  }
+
+  @Test
+  void deleteOne_whenAccountDoesNotExists_shouldReturnStatusNotFoundAndNeveDeleted() {
+
+    Account creator = new Account();
+    creator.setId(1L);
+    creator.setFirstName("vincent");
+    creator.setLastName("low");
+    creator.setBirthDate(LocalDate.MIN);
+    creator.setUsername("vincent.low");
+
+    Tweet tweet = new Tweet();
+    tweet.setId(1L);
+    tweet.setMessage("tweet #1");
+    tweet.setCreator(creator);
+
+    BDDMockito.given(accountHelper.findOneAccount(anyLong()))
+        .willReturn(null);
+
+    Assertions.assertThat(tweetService.deleteOne(creator.getId(), tweet.getId())
+        .getStatus())
+        .isEqualTo(STATUS_NOT_FOUND());
+
+    Mockito.verify(tweetRepository, never())
+        .delete(any());
+  }
+
+  @Test
+  void deleteOne_whenAccountExistsAndTweetDoesNotExist_shouldReturnStatusNotFoundAndNeverDeleted() {
+
+    Account creator = new Account();
+    creator.setId(1L);
+    creator.setFirstName("vincent");
+    creator.setLastName("low");
+    creator.setBirthDate(LocalDate.MIN);
+    creator.setUsername("vincent.low");
+
+    Tweet tweet = new Tweet();
+    tweet.setId(1L);
+    tweet.setMessage("tweet #1");
+    tweet.setCreator(creator);
+
+    BDDMockito.given(accountHelper.findOneAccount(creator.getId()))
+        .willReturn(creator);
+    BDDMockito.given(tweetHelper.findOneTweet(creator.getId(), tweet.getId()))
+        .willReturn(null);
+
+    Assertions.assertThat(tweetService.deleteOne(creator.getId(), tweet.getId())
+        .getStatus())
+        .isEqualTo(STATUS_NOT_FOUND());
+
+    Mockito.verify(tweetRepository, never())
+        .delete(any());
+  }
+
+  @Test
+  void deleteOne_whenAccountExistsAndRequestIsNull_shouldReturnStatusNotFoundAndNeverSaved() {
+
+    Account creator = new Account();
+    creator.setId(1L);
+    creator.setFirstName("vincent");
+    creator.setLastName("low");
+    creator.setBirthDate(LocalDate.MIN);
+    creator.setUsername("vincent.low");
+
+    BDDMockito.given(accountHelper.findOneAccount(creator.getId()))
+        .willReturn(creator);
+
+    Assertions.assertThat(tweetService.deleteOne(creator.getId(), null)
+        .getStatus())
+        .isEqualTo(STATUS_NOT_FOUND());
+
+    Mockito.verify(tweetRepository, never())
+        .delete(any());
+  }
 }

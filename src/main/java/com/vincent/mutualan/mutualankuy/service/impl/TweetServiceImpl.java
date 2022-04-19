@@ -125,6 +125,9 @@ public class TweetServiceImpl implements TweetService {
   @Override
   public BaseResponse<?> updateOne(Long accountId, Long tweetId, UpdateTweetRequest request) {
 
+    if (Objects.isNull(request))
+      return getBaseResponse(String.format("empty request body"), STATUS_NO_CONTENT());
+
     Account creator = accountHelper.findOneAccount(accountId);
     if (Objects.isNull(creator))
       return getBaseResponse(String.format("account with id %d does not exist", accountId), STATUS_NOT_FOUND());
